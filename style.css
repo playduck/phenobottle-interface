@@ -626,3 +626,40 @@ input[type=number] {
     top: 10vh;
     z-index: 99999;
 }
+
+@media only screen and (max-width: 600px) {
+    body {
+        overflow: scroll;
+    }
+    .container  {
+        /* padding: 0; */
+    }
+    #main-grid {
+        width: 99vw;
+        padding: 0;
+        margin: 0 0.5vw
+    }
+    header,
+    footer {
+        padding: 0.5em 0git!important;
+        width: 100vw;
+    }
+    .collection,
+    #main-grid {
+        display: flex;
+        flex-direction: column;
+        /* padding: 0; */
+    }
+    #parameter {
+        width: 100vw;
+    }
+    #settings {
+        padding: 0.5em;
+    }
+    #data-tables {
+        gap: 0;
+    }
+    .data-table {
+        width: 33vw;
+    }
+}
