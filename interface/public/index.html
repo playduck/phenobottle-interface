@@ -3,14 +3,12 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WARR Phenobottle Interface</title>
+    <title>D.I.N.O.labs Phenobottle Interface</title>
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
 
     <link rel="stylesheet" href="https://unpkg.com/vis-timeline@7.7.3/dist/vis-timeline-graph2d.min.css" />
-    <!-- <script rel="script" src="https://unpkg.com/vis-timeline@7.7.3/dist/vis-timeline-graph2d.min.js" ></script> -->
     <script type="text/javascript"
       src="https://unpkg.com/vis-timeline/standalone/umd/vis-timeline-graph2d.min.js"></script>
-    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.2.0/vis.min.css" />
-    <script rel="script" src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.2.0/vis.min.js" ></script> -->
 
     <link rel="stylesheet" href="style.css">
     <style id="root">
@@ -68,7 +66,7 @@
 
     <header id="header">
       <h1 id="name">
-        <svg id="***REMOVED***-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 70 45.7">
+        <svg class="logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 70 45.7">
           <defs><style>.g{fill:#0761b0;}.g,.h,.i{stroke-width:0px;}.h{fill:#9bdafa;}.i{fill:#6ab2e1;}</style></defs><g
             id="c"><path class="g"
               d="m23-.4L.2,22.3l22.8,22.8,22.8-22.8L23-.4Zm0,38.8L6.9,22.3,23,6.2l16,16.1-16,16.1Z" /><polygon
@@ -80,7 +78,7 @@
               class="h" points="44.6 -.4 67.4 22.3 44.6 45.1 41.3 41.7 60.7 22.3 41.3 2.9 44.6 -.4" /></g>
         </svg>
         <span id="name-text">
-          Phenobottle Interface
+          D.I.N.O.labs Phenobottle Interface
         </span>
       </h1>
       <div id="info">
@@ -90,6 +88,8 @@
         <div>
           <span id="time">-</span>
         </div>
+        <span>Mater Mode:</span>
+        <span id="mater-mode-status">Disabled</span>
       </div>
     </header>
 
@@ -109,25 +109,38 @@
             <div class="plot" id="od-plot"></div>
             <div id="timeline"></div>
           </div>
-          <div id="settings">
-            <h2>Timeline Settings</h2>
-            <div>
-              <label for="start-setting">Start</label>
-              <div class="unit-input" unit="hh:mm"><input type="time" value="00:00" name="start-setting"
-                  id="start-setting"></div>
-              <label for="end-setting">End</label>
-              <div class="unit-input" unit="hh:mm"><input type="time" value="00:00" name="end-setting"
-                  id="end-setting"></div>
-              <label for="period-setting">Period</label>
-              <div class="unit-input" unit="hh:mm"><input type="time" value="00:00" name="period-setting"
+          <section>
+            <h2>Selection Settings</h2>
+            <div id="settings">
+            <div id="context-settings">
+              <div>
+                <label for="start-setting">Start</label>
+                <div class="unit-input" unit="hh:mm"><input type="time" value="00:00" name="start-setting"
+                    id="start-setting"></div>
+              </div>
+              <div>
+                <label for="end-setting">End</label>
+                <div class="unit-input" unit="hh:mm"><input type="time" value="00:00" name="end-setting"
+                    id="end-setting"></div>
+                </div>
+              <div>
+                <label for="period-setting">Period</label>
+                <div class="unit-input" unit="hh:mm"><input type="time" value="00:00" name="period-setting"
                   id="period-setting"></div>
-              <label for="parameter-setting">Parameter</label>
-              <div class="unit-input" unit><input type="number" name="parameter-setting" id="parameter-setting"></div>
+                </div>
+              <div>
+                <label for="parameter-setting">Parameter</label>
+                <div class="unit-input" unit><input type="number" name="parameter-setting" id="parameter-setting"></div>
+              </div>
             </div>
-            <button>Add Temp Event</button>
-            <button>Add Mixing Event</button>
-            <button>Add Pump Event</button>
+            <div id="settings-actions">
+              <button>Add Temp Event</button>
+              <button>Add Mixing Event</button>
+              <button>Add Pump Event</button>
+              <button class="save-button">Save Timeline</button>
+            </div>
           </div>
+          </section>
         </section>
       </div>
 
@@ -150,43 +163,43 @@
               <div>
                 <label for="temp-update-rate">Temp</label>
                 <div class="unit-input" unit="ms"><input type="number" name="temp-update-rate"
-                    id="temp-update-rate"></div>
+                    id="temp-update-rate" value="1000"></div>
               </div>
               <div>
                 <label for="gas-update-rate">CO2</label>
                 <div class="unit-input" unit="ms"><input type="number" name="gas-update-rate"
-                    id="gas-update-rate"></div>
+                    id="gas-update-rate" value="1000"></div>
               </div>
               <div>
                 <label for="od-update-rate">OD</label>
-                <div class="unit-input" unit="min"><input type="number" name="od-update-rate" id="od-update-rate"></div>
+                <div class="unit-input" unit="min"><input type="number" name="od-update-rate" id="od-update-rate" value="30"></div>
               </div>
               <div>
                 <label for="camera-update-rate">Cam</label>
                 <div class="unit-input" unit="sec"><input type="number" name="camera-update-rate"
-                    id="camera-update-rate"></div>
+                    id="camera-update-rate" value="1"></div>
               </div>
+              <button class="save-button" id="save-settings">Save Settings</button>
               <div>
                 <label for="temp-high-alert">Temp H</label>
                 <div class="unit-input" unit="°C"><input type="number" name="temp-high-alert"
-                    id="temp-high-alert"></div>
+                    id="temp-high-alert" value="28.0"></div>
               </div>
               <div>
                 <label for="temp-low-alert">Temp L</label>
                 <div class="unit-input" unit="°C"><input type="number" name="temp-low-alert"
-                    id="temp-low-alert"></div>
+                    id="temp-low-alert" value="11.0"></div>
               </div>
               <div>
                 <label for="co2-high-alert">CO2 H</label>
                 <div class="unit-input" unit="ppm"><input type="number" name="co2-high-alert"
-                    id="co2-high-alert"></div>
+                    id="co2-high-alert" value="700"></div>
               </div>
               <div>
                 <label for="od-low-alert">CO2 L</label>
                 <div class="unit-input" unit="ppm"><input type="number" name="co2-low-alert"
-                    id="co2-low-alert"></div>
+                    id="co2-low-alert" value="200"></div>
               </div>
-
               <!-- <label for="event-update-rate">Event Loop</label>
                   <div class="unit-input" unit="ms"><input type="number" name="event-update-rate" id="event-update-rate"></div> -->
             </div>
@@ -194,16 +207,12 @@
           <div class="container border">
             <h2>Actions</h2>
             <div class="collection" id="actions">
-              <button>Save Settings</button>
               <button>Force System Restart</button>
-              <button>Toggle Illumination</button>
-              <button>Toggle Pump</button>
-              <button>Toggle Mixing</button>
               <button>Measure Temperature</button>
               <button>Measure OD</button>
               <button>Measure Gas</button>
               <button>Trigger Camera</button>
-              <button>Enable Mater Mode</button>
+              <button id="mater-mode-button">Enable Mater Mode</button>
             </div>
           </div>
         </section>
@@ -246,7 +255,6 @@
           </div>
         </section>
       </div>
-
     </div>
     <footer>
       2024 WARR ***REMOVED***

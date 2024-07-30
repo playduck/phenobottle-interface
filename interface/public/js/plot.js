@@ -13,8 +13,11 @@ const gasTableBody = document.getElementById('gas-table-body');
 const odTableBody = document.getElementById('od-table-body');
 
 const sign = document.getElementById('sign');
-
 const camera = document.getElementById('camera');
+
+let materModeEnabled = false;
+const materModeStatus = document.getElementById("mater-mode-status");
+const materModeButton = document.getElementById("mater-mode-button");
 
 const tempData = new vis.DataSet({type: {start: 'ISODate', end: 'ISODate'}});
 const gasData = new vis.DataSet({type: {start: 'ISODate', end: 'ISODate'}});
@@ -59,7 +62,7 @@ const commonOptions = {
 
 const graphOptions = {
   ...commonOptions,
-  height: '125px',
+  height: '140px',
   autoResize: true,
   orientation: 'top',
   interpolation: false,
@@ -316,3 +319,16 @@ sign.onclick = () => {
     innerDoc.getElementById('game-start').click();
   }, 1000);
 };
+
+materModeButton.onclick = () => {
+  materModeEnabled = !materModeEnabled;
+
+  if(materModeEnabled === true)  {
+    materModeButton.innerText = "Disable Mater Mode";
+    materModeStatus.innerText = "Armed";
+  } else  {
+    materModeButton.innerText = "Enable Mater Mode";
+    materModeStatus.innerText = "Disabled";
+  }
+
+}

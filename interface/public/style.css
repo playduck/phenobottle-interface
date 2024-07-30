@@ -9,10 +9,16 @@ h1, h2, h3, h4 {
     font-weight: 800;
 }
 
+h2 {
+    font-size: 1.2em;
+}
+
 html {
     font-family: Helvetica, Arial, sans-serif;
     font-weight: 100;
     background-color: var(--background);
+    background-size: cover;
+    background: linear-gradient(45deg, var(--background), var(--very-light-gray));
     color: var(--very-dark-gray)!important;
     box-sizing: border-box;
 
@@ -43,19 +49,30 @@ button {
     border-radius: var(--border-radius);
     color: var(--warr-black);
     cursor: pointer;
-
-    will-change: background-color;
-    transition: background-color 200ms;
 }
 
 button:hover {
-    background-color: var(--background);
+    background-color: var(--very-light-gray);
     border-color: var(--warr-blue-3);
 }
 
 button:active {
-    background-color: var(--dark-gray);
-    border-color: var(--warr-blue-1);
+    background-color: var(--background);
+    border-color: var(--warr-blue-2);
+}
+
+.save-button {
+    border-color: color-mix(in srgb, var(--warr-green), var(--dark-gray) 20%)!important;
+}
+.save-button:hover {
+    border-color: var(--warr-green)!important;
+}
+.save-button:active {
+    border-color: color-mix(in srgb, var(--warr-green), var(--light-gray) 80%)!important;
+}
+
+#save-settings {
+    grid-column: 1/3;
 }
 
 #view-controls {
@@ -72,8 +89,9 @@ button:active {
     justify-content: space-between;
     padding: 1ex 4em;
     border-bottom: 1px solid var(--warr-blue-1);
-    outline: 3px solid var(--warr-blue-3);
+    outline: 2px solid var(--warr-blue-3);
     margin-bottom: 1em;
+    background-color: var(--background);
 }
 
 #name {
@@ -89,7 +107,7 @@ button:active {
     height: 100%;
 }
 
-#***REMOVED***-logo {
+.logo {
     width: 1.75em;
     margin: 0.25ex 0.25em 0.25ex 0;
     vertical-align: middle;
@@ -105,7 +123,7 @@ button:active {
     text-align: right;
 }
 
-#connection, #time, #host-time {
+#connection, #mater-mode-status, #host-time {
     text-align: left;
     font-weight: 600;
 }
@@ -166,7 +184,7 @@ footer {
 }
 
 .container {
-    padding: 1em;
+    padding: 0.75em;
     overflow: visible;
     height: 100%;
 }
@@ -174,7 +192,13 @@ footer {
 .border  {
     border-radius: 1rem;
     border: 1px solid var(--light-gray);
-    outline: 1px solid var(--very-light-gray);
+    will-change: border-color;
+    transition:  10ms;
+}
+
+.border:hover {
+    background-color: var(--background);
+    border-color: color-mix(in srgb, var(--warr-blue-3), black 20%);
 }
 
 .container.label::before {
@@ -188,6 +212,7 @@ footer {
 
 #camera-container {
     aspect-ratio: 16/9;
+    position: relative;
     background-color: var(--light-gray);
     background-image: var(--url);
     background-repeat: no-repeat;
@@ -196,7 +221,7 @@ footer {
     display: flex;
     justify-content: center;
     align-items: center;
-    margin: 1em 0 0.5em 0;
+    margin: 1em 0 0 0;
     border-radius: calc(2.5 * var(--border-radius));
     cursor: zoom-in;
 }
@@ -240,6 +265,23 @@ footer {
     filter: grayscale(50%) contrast(0.5);
 }
 
+#camera-container::before {
+    content: "";
+    position: absolute;
+    right: 1%;
+    bottom: 2.5%;
+    width: 10%;
+    aspect-ratio: 1/1;
+    z-index: 10000;
+    background-image: url(assets/dinolabsBlue.svg);
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-color: color-mix(in srgb, white, transparent 50%);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border-radius: 100%;
+}
+
 .offline #camera-container::after {
     content: "Unavailable";
     color: var(--dark-gray);
@@ -268,16 +310,6 @@ footer {
 #camera-timestamp {
     font-style: normal;
     color: var(--warr-black);
-}
-
-canvas#graphic {
-    /* background-color: red; */
-    /* opacity: 0.0; */
-    /* z-index: 9999;
-    position: fixed;
-    width: 50%;
-    height: 50%; */
-    /* transform: scale(2); */
 }
 
 .vis-text {
@@ -318,8 +350,8 @@ canvas#graphic {
 }
 
 #temperature-plot .vis-graph-group1, #temperature-plot .vis-graph-group1.vis-point {
-    fill: color-mix(in srgb, var(--warr-blue-3), var(--very-light-gray) 60%)!important;
-    stroke: var(--warr-blue-3)!important;
+    fill: color-mix(in srgb, var(--warr-blue-3), var(--light-gray) 60%)!important;
+    stroke: color-mix(in srgb, var(--warr-blue-3), var(--dark-gray) 40%)!important;
 }
 
 #gas-plot .vis-graph-group0, #gas-plot .vis-graph-group0.vis-point {
@@ -409,19 +441,17 @@ canvas#graphic {
     border-radius: var(--border-radius);
 }
 
-#settings {
-    display: flex;
-    flex-direction: row;
-    justify-content: flex-end;
-    flex-wrap: wrap;
-    /* TODO */
-    gap: 10px;
-    padding: 0.5em;
-}
+#settings   {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    padding: 1em 0.5em 0.5em 10em;
 
-#settings div {
-    display: flex;
-    align-items: center;
+}
+#context-settings,
+#settings-actions   {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    /* align-items: flex-start; */
 }
 
 #data-tables {
@@ -434,7 +464,7 @@ canvas#graphic {
 }
 
 .data-table {
-    height: 120px;
+    height: 150px;
     width: 100%;
     border-spacing: 0;
     text-align: left;
