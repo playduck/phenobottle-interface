@@ -1,6 +1,6 @@
 /* jshint esversion:6 */
 
-const PORT = 5500;
+const PORT = 80;
 
 const express = require('express');
 const basicAuth = require('express-basic-auth');
