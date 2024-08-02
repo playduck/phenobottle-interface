@@ -591,6 +591,8 @@ input[type=number] {
     color: var(--very-dark-gray);
     border-top-left-radius: var(--border-radius);
     border-top-right-radius: var(--border-radius);
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
     cursor: text;
     text-align: right;
     padding: 0.25em;
@@ -640,9 +642,12 @@ input[type=number] {
         margin: 0 0.5vw
     }
     header,
-    footer {
-        padding: 0.5em 0git!important;
+    footer  {
+        padding: 0.5em 0!important;
         width: 100vw;
+    }
+    #name {
+        width: 100%;
     }
     .collection,
     #main-grid {
@@ -661,5 +666,8 @@ input[type=number] {
     }
     .data-table {
         width: 33vw;
+    }
+    .fullscreen #camera-container {
+        width: 100vw;
     }
 }
