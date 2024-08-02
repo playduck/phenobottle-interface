@@ -1,6 +1,6 @@
 /* jshint esversion:6 */
 
-const PORT = 80;
+const PORT = 8080;
 
 const express = require('express');
 const basicAuth = require('express-basic-auth');
@@ -40,6 +40,8 @@ function getUnauthorizedResponse(req) {
       ('Credentials ' + req.auth.user + ':' + req.auth.password + ' rejected') :
       'No credentials provided'
 }
+
+app.use('/favicon.ico', express.static('public/assets/favicon.ico'));
 
 app.use(basicAuth({
   users: {
