@@ -172,10 +172,10 @@ app.get('/raw', async (req, res) => {
 setInterval(() => {
   io.emit(
       'measurementTemperature',
-      [{timestamp: Date.now(), value: (Math.sin(Date.now() / 2000) * 0.5 + 0.5) * 60 - 10}]);
+      [{timestamp: Date.now(), value: (Math.sin(Date.now() / 5000) * 0.5 + 0.5) * 60 - 10}]);
   io.emit('measurementOD', [{timestamp: Date.now(), value:  Math.sin(Date.now() / 500) * 0.5 + 0.5}]);
   io.emit(
-      'measurementCO2', [{timestamp: Date.now(), value:  (Math.sin(Date.now() / 5000) * 0.5 + 0.5) * 1000}]);
+      'measurementCO2', [{timestamp: Date.now(), value:  (Math.sin(Date.now() / 2000) * 0.5 + 0.5) * 1000}]);
 }, 1000);
 
 app.use('/', express.static('public'));

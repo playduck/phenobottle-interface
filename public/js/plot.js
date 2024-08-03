@@ -17,18 +17,18 @@ const camera = document.getElementById('camera');
 const cameraContainer = document.getElementById('camera-container');
 
 let materModeEnabled = false;
-const materModeStatus = document.getElementById("mater-mode-status");
-const materModeButton = document.getElementById("mater-mode-button");
+const materModeStatus = document.getElementById('mater-mode-status');
+const materModeButton = document.getElementById('mater-mode-button');
 
-const connectionElement = document.getElementById("connection");
-const hostTimeElement = document.getElementById("time");
+const connectionElement = document.getElementById('connection');
+const hostTimeElement = document.getElementById('time');
 
 const tempData = new vis.DataSet({type: {start: 'ISODate', end: 'ISODate'}});
 const gasData = new vis.DataSet({type: {start: 'ISODate', end: 'ISODate'}});
 const odData = new vis.DataSet({type: {start: 'ISODate', end: 'ISODate'}});
 
 
-const device_id = 1; // FIXME
+const device_id = 1;  // FIXME
 
 
 const groups = new vis.DataSet([
@@ -81,7 +81,7 @@ const graphOptions = {
 const tempOptions = {
   ...graphOptions,
   defaultGroup: '',
-  dataAxis: {width: '73px', left: {range: {min: -10 -10, max: 50 + 10}}},
+  dataAxis: {width: '73px', left: {range: {min: -10 - 10, max: 50 + 10}}},
 };
 
 const gasOptions = {
@@ -101,15 +101,15 @@ const odOptions = {
 const timelineOptions = {
   ...commonOptions,
   editable: {
-    add: true,         // add new items by double tapping
-    updateTime: true,  // drag items horizontally
-    updateGroup: false, // drag items from one group to another
-    remove: true,       // delete an item by tapping the delete button top right
+    add: true,           // add new items by double tapping
+    updateTime: true,    // drag items horizontally
+    updateGroup: false,  // drag items from one group to another
+    remove: true,  // delete an item by tapping the delete button top right
     overrideItems: false  // allow these options to override item.editable
   },
   stack: false,
-  height: "200px",
-  groupHeightMode: "fixed",
+  height: '200px',
+  groupHeightMode: 'fixed',
   orientation: 'bottom',
   rollingMode: {follow: false, offset: 0.85},
   onMoving: (item, callback) => {
@@ -154,7 +154,8 @@ tempData.add({x: commonOptions.max, y: 18, group: 'Optimal'});
 const tempplot = new vis.Graph2d(tempContainer, tempData, tempOptions);
 const gasplot = new vis.Graph2d(gasContainer, gasData, gasOptions);
 const odplot = new vis.Graph2d(odContainer, odData, odOptions);
-const timeline = new vis.Timeline(timelineContainer, items, groups, timelineOptions);
+const timeline =
+    new vis.Timeline(timelineContainer, items, groups, timelineOptions);
 
 tempplot.on('rangechange', () => {
   const {start, end} = {...tempplot.getWindow()};
@@ -228,8 +229,10 @@ function y(x) {
 function addTempData(timestamp, value) {
   const date = new Date(timestamp);
 
-  const timeString = `${zeroPad(date.getDate(),2)}-${zeroPad(date.getHours(),2)}:${zeroPad(date.getMinutes(),2)}:${zeroPad(date.getSeconds(), 2)}:${zeroPad(date.getMilliseconds(), 3)}`;
-  const valString = value.toFixed(1) + "°C";
+  const timeString = `${zeroPad(date.getDate(), 2)}-${
+      zeroPad(date.getHours(), 2)}:${zeroPad(date.getMinutes(), 2)}:${
+      zeroPad(date.getSeconds(), 2)}:${zeroPad(date.getMilliseconds(), 3)}`;
+  const valString = value.toFixed(1) + '°C';
   tempData.add({
     x: date,
     y: value,
@@ -250,13 +253,24 @@ function addTempData(timestamp, value) {
   </tr>
   `;
   tempTableBody.insertBefore(newRow, tempTableBody.firstChild);
+
+  if (materModeEnabled) {
+    const highLimit = parseFloat(document.getElementById('temp-high-alert').value);
+    const lowLimit = parseFloat(document.getElementById('temp-low-alert').value);
+
+    if (value >= highLimit || value <= lowLimit) {
+      playSound(5000);
+    }
+  }
 }
 
 function addGasData(timestamp, value) {
   const time = new Date(timestamp);
 
-  const timeString = `${zeroPad(time.getDate(),2)}-${zeroPad(time.getHours(),2)}:${zeroPad(time.getMinutes(),2)}:${zeroPad(time.getSeconds(), 2)}:${zeroPad(time.getMilliseconds(), 3)}`;
-  const valString = (value).toFixed(2) + "ppm";
+  const timeString = `${zeroPad(time.getDate(), 2)}-${
+      zeroPad(time.getHours(), 2)}:${zeroPad(time.getMinutes(), 2)}:${
+      zeroPad(time.getSeconds(), 2)}:${zeroPad(time.getMilliseconds(), 3)}`;
+  const valString = (value).toFixed(2) + 'ppm';
   gasData.add({
     x: time,
     y: value,
@@ -277,13 +291,24 @@ function addGasData(timestamp, value) {
   </tr>
   `;
   gasTableBody.insertBefore(newRow, gasTableBody.firstChild);
+
+  if (materModeEnabled) {
+    const highLimit = parseFloat(document.getElementById('co2-high-alert').value);
+    const lowLimit = parseFloat(document.getElementById('co2-low-alert').value);
+
+    if (value >= highLimit || value <= lowLimit) {
+      playSound(5000);
+    }
+  }
 }
 
 function addOdData(timestamp, value) {
   const time = new Date(timestamp);
 
-  const timeString = `${zeroPad(time.getDate(),2)}-${zeroPad(time.getHours(),2)}:${zeroPad(time.getMinutes(),2)}:${zeroPad(time.getSeconds(), 2)}:${zeroPad(time.getMilliseconds(), 3)}`;
-  const valString = (value * 100).toFixed(1) + "%";
+  const timeString = `${zeroPad(time.getDate(), 2)}-${
+      zeroPad(time.getHours(), 2)}:${zeroPad(time.getMinutes(), 2)}:${
+      zeroPad(time.getSeconds(), 2)}:${zeroPad(time.getMilliseconds(), 3)}`;
+  const valString = (value * 100).toFixed(1) + '%';
   odData.add({
     x: time,
     y: value,
@@ -326,75 +351,122 @@ sign.onclick = () => {
   }, 1000);
 };
 
-materModeButton.onclick = () => {
-  materModeEnabled = !materModeEnabled;
 
-  if(materModeEnabled === true)  {
-    materModeButton.innerText = "Disable Mater Mode";
-    materModeStatus.innerText = "Armed";
-    document.body.classList.add("armed");
-  } else  {
-    materModeButton.innerText = "Enable Mater Mode";
-    materModeStatus.innerText = "Disabled";
-    document.body.classList.remove("armed");
+
+let source = undefined;
+let audioContext = undefined;
+
+const xhr = new XMLHttpRequest();
+xhr.open('GET', 'assets/mater.mp3', true);
+xhr.responseType = 'arraybuffer';
+xhr.onload = function() {
+  if (xhr.status === 200) {
+    audioContext = new AudioContext();
+    audioContext.decodeAudioData(xhr.response, function(buffer) {
+      source = audioContext.createBufferSource();
+      source.buffer = buffer;
+      source.loop = true;
+      const gainNode = audioContext.createGain();
+      gainNode.gain.value = 1; // adjust the volume
+      source.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      source.start();
+    });
   }
+};
+xhr.send();
 
+let totalPlaybackTime = 0;
+let isPlaying = false;
+let playbackStart = 0;
+let timeoutId = null;
+
+function playSound(duration_ms) {
+  if (!isPlaying) {
+    audioContext.resume();
+    isPlaying = true;
+    playbackStart = audioContext.currentTime;
+    document.body.classList.add('triggered');
+  }
+  if (timeoutId !== null) {
+    clearTimeout(timeoutId);
+  }
+  timeoutId = setTimeout(() => {
+    if (isPlaying) {
+      isPlaying = false;
+      audioContext.suspend();
+      document.body.classList.remove('triggered');
+    }
+  }, duration_ms);
 }
 
-const socket = io({extraHeaders: {
-  Authorization: 'Basic ' + btoa("***REMOVED***:***REMOVED***")
-}});
+materModeButton.onclick =
+    () => {
+      materModeEnabled = !materModeEnabled;
+
+      if (materModeEnabled === true) {
+        materModeButton.innerText = 'Disable Mater Mode';
+        // materModeStatus.innerText = 'Armed';
+        document.body.classList.add('armed');
+        playSound(1000);
+      } else {
+        materModeButton.innerText = 'Enable Mater Mode';
+        // materModeStatus.innerText = 'Disabled';
+        document.body.classList.remove('armed');
+      }
+    }
+
+const socket = io(
+    {extraHeaders: {Authorization: 'Basic ' + btoa('***REMOVED***:***REMOVED***')}});
 
 const connectMessage = () => {
   socket.emit('deviceListRequest');
   socket.emit('imageRequest', device_id);
-  socket.emit("measurementRequest", device_id, "temperature", 100);
-  socket.emit("measurementRequest", device_id, "CO2", 100);
-  socket.emit("measurementRequest", device_id, "OD", 100);
+  socket.emit('measurementRequest', device_id, 'temperature', 100);
+  socket.emit('measurementRequest', device_id, 'CO2', 100);
+  socket.emit('measurementRequest', device_id, 'OD', 100);
 };
 
 socket.on('connect', connectMessage);
 socket.on('reconnect', connectMessage);
 
-socket.on("failure", (err) => {
-  console.error(err)
-})
+socket.on('failure', (err) => {console.error(err)})
 
-const deviceListElement = document.getElementById("device-id");
+const deviceListElement = document.getElementById('device-id');
 socket.on('deviceList', (devices) => {
-  for(const device in devices)  {
-    const optionItem = document.createElement("option");
+  for (const device in devices) {
+    const optionItem = document.createElement('option');
     optionItem.value = devices[device].device_id;
-    optionItem.innerText = `${devices[device].device_name} (${devices[device].device_id})`;
+    optionItem.innerText =
+        `${devices[device].device_name} (${devices[device].device_id})`;
     deviceListElement.appendChild(optionItem);
   }
 });
 
 socket.on('imageUpdate', (data) => {
-
   const buffer = new Uint8Array(data.buffer);
-  const blob = new Blob([buffer], { type: 'image/webp' });
+  const blob = new Blob([buffer], {type: 'image/webp'});
   const url = URL.createObjectURL(blob);
 
-  cameraContainer.style.setProperty("--url", `url(${url})`);
+  cameraContainer.style.setProperty('--url', `url(${url})`);
 
   // Display the timestamp in a div
   const timestampDiv = document.getElementById('camera-timestamp');
   timestampDiv.innerText = new Date(data.timestamp).toISOString();
 });
 
-socket.on("measurementTemperature", (rows) => {
-  for(const row in rows)  {
+socket.on('measurementTemperature', (rows) => {
+  for (const row in rows) {
     addTempData(rows[row].timestamp, rows[row].value);
   }
 });
-socket.on("measurementCO2", (rows) => {
-  for(const row in rows)  {
+socket.on('measurementCO2', (rows) => {
+  for (const row in rows) {
     addGasData(rows[row].timestamp, rows[row].value);
   }
 });
-socket.on("measurementOD", (rows) => {
-  for(const row in rows)  {
+socket.on('measurementOD', (rows) => {
+  for (const row in rows) {
     addOdData(rows[row].timestamp, rows[row].value);
   }
 });
@@ -412,29 +484,28 @@ socket.on('heartbeatRequest', (serverTimestamp) => {
     const endTime = Date.now();
     const rtt = endTime - startTime;
 
-    if(rtt_filtered == -1)  {
+    if (rtt_filtered == -1) {
       rtt_filtered = rtt;
-    } else  {
+    } else {
       rtt_filtered = (rtt_alpha * rtt_filtered) + ((1 - rtt_alpha) * rtt);
     }
 
     connectionElement.innerText = `${rtt_filtered.toFixed(2)}ms`;
 
-    if(document.body.classList.contains("offline")) {
-      document.body.classList.remove("offline");
-      document.body.classList.add("online");
+    if (document.body.classList.contains('offline')) {
+      document.body.classList.remove('offline');
+      document.body.classList.add('online');
     }
 
     socket.emit('heartbeatResponse', rtt);
   });
-
 });
 
 socket.on('disconnect', () => {
   console.log('Disconnected from the server');
-  connectionElement.innerText = "";
-  hostTimeElement.innerText = "-";
-  document.body.classList.remove("online");
-  document.body.classList.add("offline");
+  connectionElement.innerText = '';
+  hostTimeElement.innerText = '-';
+  document.body.classList.remove('online');
+  document.body.classList.add('offline');
   rtt_filtered = -1;
 });

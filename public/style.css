@@ -99,6 +99,11 @@ button:active {
     border-color: color-mix(in srgb, var(--warr-yellow), black 40%);
 }
 
+.triggered #header {
+    outline-color: var(--warr-red)!important;
+    border-color: color-mix(in srgb, var(--warr-red), black 40%)!important;
+}
+
 #name {
     display: flex;
     align-items: center;
@@ -151,8 +156,18 @@ button:active {
     font-weight: 600;
 }
 
-.armed  #mater-mode-status {
+#mater-mode-status::after {
+    content: "Disabled";
+}
+
+.armed #mater-mode-status::after {
+    content: "Armed";
     color: var(--warr-yellow);
+}
+
+.triggered  #mater-mode-status::after {
+    content: "Trig'd"!important;
+    color: var(--warr-red)!important;
 }
 
 #connection {
