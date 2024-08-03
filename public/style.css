@@ -132,6 +132,9 @@ button:active {
     color: var(--warr-black);
 }
 
+.online #connection {
+    color: var(--warr-green);
+}
 .offline #connection::before {
     content: "Offline";
     color: var(--warr-red);

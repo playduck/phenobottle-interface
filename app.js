@@ -4,10 +4,18 @@ const PORT = 8080;
 
 const express = require('express');
 const basicAuth = require('express-basic-auth');
+const app = express();
+
 const multer = require('multer');
+const storage = multer.memoryStorage();
+const upload = multer({storage: storage});
+
+const server = require('http').createServer(app);
+const io = require('socket.io')(server);
 
 const database = require('./database.js');
 const exporter = require('./exporter.js');
+const socket = require('./socket.js');
 
 database.connect();
 
@@ -30,11 +38,6 @@ process.on('SIGUSR1', exitHandler.bind(null, {exit: true}));
 process.on('SIGUSR2', exitHandler.bind(null, {exit: true}));
 process.on('uncaughtException', exitHandler.bind(null, {exit: true}));
 
-const app = express();
-
-const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
-
 function getUnauthorizedResponse(req) {
   return req.auth ?
       ('Credentials ' + req.auth.user + ':' + req.auth.password + ' rejected') :
@@ -51,6 +54,8 @@ app.use(basicAuth({
   challenge: true,
   realm: '***REMOVED***-phenobottle',
 }));
+
+socket(io);
 
 app.use(express.json())
 
@@ -70,35 +75,37 @@ app.post('/measurements', (req, res) => {
 
 // POST endpoint for images
 app.post('/images', upload.single('image'), (req, res) => {
-    const device_id = req.header('Device-Id');
-    const timestamp = req.header('Timestamp');
+  const device_id = req.header('Device-Id');
+  const timestamp = req.header('Timestamp');
 
-    if (!req.file) {
-        return res.status(400).send('No files were uploaded.');
+  if (!req.file) {
+    return res.status(400).send('No files were uploaded.');
+  }
+
+  const imageHexString = req.file.buffer.toString('hex');
+
+  database.insertImage(device_id, timestamp, imageHexString, (err, results) => {
+    if (err) {
+      console.error(err);
+      res.status(500).send({message: 'Error inserting image'});
+    } else {
+      res.send({message: 'Image inserted successfully'});
     }
-
-    const imageHexString = req.file.buffer.toString('hex');
-
-    database.insertImage(device_id, timestamp, imageHexString, (err, results) => {
-        if (err) {
-            console.error(err);
-            res.status(500).send({ message: 'Error inserting image' });
-        } else {
-            res.send({ message: 'Image inserted successfully' });
-        }
-    });
+  });
 });
 
 app.get('/raw', async (req, res) => {
-    const data = await database.getAllData();
-    const workbook = await exporter.generateExcel(data);
+  const data = await database.getAllData();
+  const workbook = await exporter.generateExcel(data);
 
-    const excelBuffer = await workbook.xlsx.writeBuffer();
-    res.setHeader('Content-Disposition', 'attachment; filename="data.xlsx"');
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.send(excelBuffer);
+  const excelBuffer = await workbook.xlsx.writeBuffer();
+  res.setHeader('Content-Disposition', 'attachment; filename="data.xlsx"');
+  res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  res.send(excelBuffer);
 });
 
 app.use('/', express.static('public'));
 
-app.listen(PORT, () => console.log(`server listening on port: ${PORT}`));
+server.listen(PORT, () => console.log(`server listening on port: ${PORT}`));

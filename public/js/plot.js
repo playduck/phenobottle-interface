@@ -332,3 +332,47 @@ materModeButton.onclick = () => {
   }
 
 }
+
+const socket = io({extraHeaders: {
+  Authorization: 'Basic ' + btoa("***REMOVED***:***REMOVED***")
+}});
+
+// Handle heartbeat request from server
+let rtt_filtered = -1;
+const rtt_alpha = 0.9;
+const connectionElement = document.getElementById("connection");
+const hostTimeElement = document.getElementById("time");
+
+socket.on('heartbeatRequest', (serverTimestamp) => {
+  const startTime = Date.now();
+  socket.emit('heartbeat');
+
+  hostTimeElement.innerText = (new Date(serverTimestamp)).toISOString();
+
+  socket.once('heartbeatResponse', () => {
+    const endTime = Date.now();
+    const rtt = endTime - startTime;
+
+    if(rtt_filtered == -1)  {
+      rtt_filtered = rtt;
+    } else  {
+      rtt_filtered = (rtt_alpha * rtt_filtered) + ((1 - rtt_alpha) * rtt);
+    }
+
+    connectionElement.innerText = `${rtt_filtered.toFixed(2)}ms`;
+    document.body.classList.remove("offline");
+    document.body.classList.add("online");
+
+    socket.emit('heartbeatResponse', rtt);
+  });
+
+});
+
+socket.on('disconnect', () => {
+  console.log('Disconnected from the server');
+  connectionElement.innerText = "";
+  hostTimeElement.innerText = "-";
+  document.body.classList.remove("online");
+  document.body.classList.add("offline");
+  rtt_filtered = -1;
+});

@@ -127,7 +127,6 @@ async function getAllData() {
 module.exports = {
   connect,
   disconnect,
-  getTables,
   insertMeasurement,
   insertImage,
   getDevices,
