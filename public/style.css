@@ -94,6 +94,11 @@ button:active {
     background-color: var(--background);
 }
 
+.armed #header {
+    outline-color: var(--warr-yellow);
+    border-color: color-mix(in srgb, var(--warr-yellow), black 40%);
+}
+
 #name {
     display: flex;
     align-items: center;
@@ -115,17 +120,39 @@ button:active {
 }
 
 #info {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    column-gap: 0.5rem;
     font-size: 0.9em !important;
-    min-width: 30vw;
-    text-align: right;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 0.5rem;
 }
 
-#connection, #mater-mode-status, #host-time {
-    text-align: left;
+#info > div {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+#info label {
+    display: inline-block;
+    min-width: 8em;
+    text-align: right;
+    padding: 0;
+    margin-right: 1em;
+}
+
+#info select {
+    padding: 0;
+    height: 1em;
+    border-bottom: 0;
+    min-width: 6em;
+}
+
+#device-id, #connection, #mater-mode-status, #time {
     font-weight: 600;
+}
+
+.armed  #mater-mode-status {
+    color: var(--warr-yellow);
 }
 
 #connection {
@@ -213,14 +240,18 @@ footer {
     background-color: var(--background);
 }
 
+#camera {
+    height: auto!important;
+}
+
 #camera-container {
     aspect-ratio: 16/9;
     position: relative;
-    background-color: var(--light-gray);
+    background-color: var(--background);
     background-image: var(--url);
     background-repeat: no-repeat;
     background-position: center;
-    background-size: contain;
+    background-size: cover;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -255,6 +286,7 @@ footer {
     left: 50%;
     width: 90vw;
     border-radius: 0;
+    background-color: transparent;
     transform: scale(1) translateY(-50%) translateX(-50%); /* scale to fill screen */
     z-index: 1000; /* bring to front */
     cursor: zoom-out;
@@ -585,7 +617,10 @@ input[type=number] {
   -moz-appearance: textfield;
 }
 
-.unit-input input {
+select,
+input {
+    appearance: none;
+    -webkit-appearance: none;
     -moz-appearance: textfield;
     background-color: var(--very-light-gray);
     border: none;
@@ -651,6 +686,14 @@ input[type=number] {
     }
     #name {
         width: 100%;
+    }
+    #info > div {
+        flex-direction: column;
+    }
+
+    #info label {
+        text-align: center;
+        margin-right: 0;
     }
     .collection,
     #main-grid {

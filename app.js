@@ -55,7 +55,7 @@ app.use(basicAuth({
   realm: '***REMOVED***-phenobottle',
 }));
 
-socket(io);
+socket(io, database);
 
 app.use(express.json())
 
@@ -74,7 +74,7 @@ app.post('/measurements', (req, res) => {
 });
 
 // POST endpoint for images
-app.post('/images', upload.single('image'), (req, res) => {
+app.post('/image', upload.single('image'), (req, res) => {
   const device_id = req.header('Device-Id');
   const timestamp = req.header('Timestamp');
 
@@ -94,6 +94,21 @@ app.post('/images', upload.single('image'), (req, res) => {
   });
 });
 
+app.get('/image/:id', (req, res) => {
+  const deviceId = req.params.id;
+
+  database.getLatestImage(deviceId, (err, rows, fields) => {
+    if(err) {
+      res.status(404).send('Image not found');
+    } else  {
+      res.set('Cache-Control', 'public, max-age=60');
+      res.set('Content-Type', 'image/webp');
+      res.set('timestamp', rows[0].timestamp.toString());
+      res.send(rows[0].image_data);
+    }
+  });
+});
+
 app.get('/raw', async (req, res) => {
   const data = await database.getAllData();
   const workbook = await exporter.generateExcel(data);
@@ -105,6 +120,7 @@ app.get('/raw', async (req, res) => {
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
   res.send(excelBuffer);
 });
+
 
 app.use('/', express.static('public'));
 

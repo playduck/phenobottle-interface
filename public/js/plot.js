@@ -14,6 +14,7 @@ const odTableBody = document.getElementById('od-table-body');
 
 const sign = document.getElementById('sign');
 const camera = document.getElementById('camera');
+const cameraContainer = document.getElementById('camera-container');
 
 let materModeEnabled = false;
 const materModeStatus = document.getElementById("mater-mode-status");
@@ -22,6 +23,10 @@ const materModeButton = document.getElementById("mater-mode-button");
 const tempData = new vis.DataSet({type: {start: 'ISODate', end: 'ISODate'}});
 const gasData = new vis.DataSet({type: {start: 'ISODate', end: 'ISODate'}});
 const odData = new vis.DataSet({type: {start: 'ISODate', end: 'ISODate'}});
+
+
+const device_id = 1; // FIXME
+
 
 const groups = new vis.DataSet([
   {id: 'divider', content: ''},
@@ -305,9 +310,18 @@ setInterval(addTempData, 543);
 setInterval(addGasData, 1026);
 setInterval(addOdData, 2665);
 
-camera.onclick = () => {
+cameraContainer.onclick = () => {
   document.body.classList.toggle('fullscreen');
 };
+
+// function getCameraImage() {
+//   if(!document.body.classList.contains("offline"))  {
+//     // append data to image, to bust the cache
+//     const imageUrl = `/image/${device_id}?t=${Date.now()}`;
+//     cameraContainer.style.setProperty('--url', `url(${imageUrl})`);
+//   }
+// }
+// setInterval(getCameraImage, 10 * 1000); // update every 10 seconds
 
 sign.onclick = () => {
   const dino = document.createElement('iframe');
@@ -326,9 +340,11 @@ materModeButton.onclick = () => {
   if(materModeEnabled === true)  {
     materModeButton.innerText = "Disable Mater Mode";
     materModeStatus.innerText = "Armed";
+    document.body.classList.add("armed");
   } else  {
     materModeButton.innerText = "Enable Mater Mode";
     materModeStatus.innerText = "Disabled";
+    document.body.classList.remove("armed");
   }
 
 }
@@ -337,9 +353,42 @@ const socket = io({extraHeaders: {
   Authorization: 'Basic ' + btoa("***REMOVED***:***REMOVED***")
 }});
 
+const connectMessage = () => {
+  socket.emit('deviceListRequest');
+  socket.emit('imageRequest', device_id);
+
+};
+
+socket.on('connect', connectMessage);
+socket.on('reconnect', connectMessage);
+
+const deviceListElement = document.getElementById("device-id");
+socket.on('deviceList', (devices) => {
+  console.log(devices)
+  for(const device in devices)  {
+    const optionItem = document.createElement("option");
+    optionItem.value = devices[device].device_id;
+    optionItem.innerText = `${devices[device].device_name} (${devices[device].device_id})`;
+    deviceListElement.appendChild(optionItem);
+  }
+});
+
+socket.on('imageUpdate', (data) => {
+
+  const buffer = new Uint8Array(data.buffer);
+  const blob = new Blob([buffer], { type: 'image/webp' });
+  const url = URL.createObjectURL(blob);
+
+  cameraContainer.style.setProperty("--url", `url(${url})`);
+
+  // Display the timestamp in a div
+  const timestampDiv = document.getElementById('camera-timestamp');
+  timestampDiv.innerText = new Date(data.timestamp).toISOString();
+});
+
 // Handle heartbeat request from server
 let rtt_filtered = -1;
-const rtt_alpha = 0.9;
+const rtt_alpha = 0.5;
 const connectionElement = document.getElementById("connection");
 const hostTimeElement = document.getElementById("time");
 
@@ -347,7 +396,7 @@ socket.on('heartbeatRequest', (serverTimestamp) => {
   const startTime = Date.now();
   socket.emit('heartbeat');
 
-  hostTimeElement.innerText = (new Date(serverTimestamp)).toISOString();
+  hostTimeElement.innerText = (new Date(serverTimestamp)).toJSON();
 
   socket.once('heartbeatResponse', () => {
     const endTime = Date.now();
@@ -360,8 +409,11 @@ socket.on('heartbeatRequest', (serverTimestamp) => {
     }
 
     connectionElement.innerText = `${rtt_filtered.toFixed(2)}ms`;
-    document.body.classList.remove("offline");
-    document.body.classList.add("online");
+
+    if(document.body.classList.contains("offline")) {
+      document.body.classList.remove("offline");
+      document.body.classList.add("online");
+    }
 
     socket.emit('heartbeatResponse', rtt);
   });

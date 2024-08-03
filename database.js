@@ -69,6 +69,7 @@ function getDeviceTasks(device_id, callback) {
 }
 
 function getLatestImage(device_id, callback) {
+  // TODO implement caching?
   const imageQuery =
       'SELECT * FROM Images WHERE device_id = ? ORDER BY timestamp DESC LIMIT 1';
   db.query(imageQuery, [device_id], callback);

@@ -63,7 +63,7 @@
       </defs>
     </svg>
   </head>
-  <body class="offline" ontouchstart="">
+  <body class="offline" ontouchstart>
 
     <header id="header">
       <h1 id="name">
@@ -83,12 +83,23 @@
         </span>
       </h1>
       <div id="info">
-        <span>Connection:</span>
-        <span id="connection"></span>
-        <span>Host Time:</span>
-        <span id="time">-</span>
-        <span>Mater Mode:</span>
-        <span id="mater-mode-status">Disabled</span>
+        <div>
+          <label>Device Id</label>
+          <select id="device-id">
+          </select>
+        </div>
+        <div>
+          <label>RTT</label>
+          <span id="connection"></span>
+        </div>
+        <div>
+          <label>Mater Mode</label>
+          <span id="mater-mode-status">Disabled</span>
+        </div>
+        <div>
+          <label>Host Time</label>
+          <span id="time">-</span>
+        </div>
       </div>
     </header>
 
@@ -111,34 +122,35 @@
           <section>
             <h2>Selection Settings</h2>
             <div id="settings">
-            <div id="context-settings">
-              <div>
-                <label for="start-setting">Start</label>
-                <div class="unit-input" unit="hh:mm"><input type="time" value="00:00" name="start-setting"
-                    id="start-setting"></div>
+              <div id="context-settings">
+                <div>
+                  <label for="start-setting">Start</label>
+                  <div class="unit-input" unit="hh:mm"><input type="time" value="00:00" name="start-setting"
+                      id="start-setting"></div>
+                </div>
+                <div>
+                  <label for="end-setting">End</label>
+                  <div class="unit-input" unit="hh:mm"><input type="time" value="00:00" name="end-setting"
+                      id="end-setting"></div>
+                </div>
+                <div>
+                  <label for="period-setting">Period</label>
+                  <div class="unit-input" unit="hh:mm"><input type="time" value="00:00" name="period-setting"
+                      id="period-setting"></div>
+                </div>
+                <div>
+                  <label for="parameter-setting">Parameter</label>
+                  <div class="unit-input" unit><input type="number" name="parameter-setting"
+                      id="parameter-setting"></div>
+                </div>
               </div>
-              <div>
-                <label for="end-setting">End</label>
-                <div class="unit-input" unit="hh:mm"><input type="time" value="00:00" name="end-setting"
-                    id="end-setting"></div>
-                </div>
-              <div>
-                <label for="period-setting">Period</label>
-                <div class="unit-input" unit="hh:mm"><input type="time" value="00:00" name="period-setting"
-                  id="period-setting"></div>
-                </div>
-              <div>
-                <label for="parameter-setting">Parameter</label>
-                <div class="unit-input" unit><input type="number" name="parameter-setting" id="parameter-setting"></div>
+              <div id="settings-actions">
+                <button>Add Temp Event</button>
+                <button>Add Mixing Event</button>
+                <button>Add Pump Event</button>
+                <button class="save-button">Save Timeline</button>
               </div>
             </div>
-            <div id="settings-actions">
-              <button>Add Temp Event</button>
-              <button>Add Mixing Event</button>
-              <button>Add Pump Event</button>
-              <button class="save-button">Save Timeline</button>
-            </div>
-          </div>
           </section>
         </section>
       </div>
@@ -171,7 +183,8 @@
               </div>
               <div>
                 <label for="od-update-rate">OD</label>
-                <div class="unit-input" unit="min"><input type="number" name="od-update-rate" id="od-update-rate" value="30"></div>
+                <div class="unit-input" unit="min"><input type="number" name="od-update-rate" id="od-update-rate"
+                    value="30"></div>
               </div>
               <div>
                 <label for="camera-update-rate">Cam</label>
