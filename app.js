@@ -13,9 +13,12 @@ const upload = multer({storage: storage});
 const server = require('http').createServer(app);
 const io = require('socket.io')(server);
 
+const sharp = require('sharp');
+
 const database = require('./database.js');
 const exporter = require('./exporter.js');
 const socket = require('./socket.js');
+const {time} = require('console');
 
 database.connect();
 
@@ -73,34 +76,55 @@ app.post('/measurements', (req, res) => {
       });
 });
 
+async function convertImage(image_data, image_mime) {
+  const avifBuffer = sharp(image_data, {format: image_mime})
+  .avif({
+    quality: 50,
+    effort: 5,
+  })
+  .toFormat('avif')
+  .toBuffer()
+
+  return avifBuffer;
+}
+
 // POST endpoint for images
-app.post('/image', upload.single('image'), (req, res) => {
+app.post('/image', upload.single('image'), async (req, res) => {
   const device_id = req.header('Device-Id');
   const timestamp = req.header('Timestamp');
+  const image_mime = req.header('Form-Mime');
 
   if (!req.file) {
     return res.status(400).send('No files were uploaded.');
   }
 
-  const imageHexString = req.file.buffer.toString('hex');
+  let avifBuffer;
+  const avif_mime = 'image/avif';
+  if (image_mime == avif_mime) {
+    avifBuffer = req.file.buffer;
+  } else {
+    avifBuffer = await convertImage(req.file.buffer, image_mime);
+  }
+  const imageHexString = avifBuffer.toString('hex');
 
-  database.insertImage(device_id, timestamp, imageHexString, (err, results) => {
-    if (err) {
-      console.error(err);
-      res.status(500).send({message: 'Error inserting image'});
-    } else {
-      res.send({message: 'Image inserted successfully'});
-    }
-  });
+  database.insertImage(
+      device_id, timestamp, avif_mime, imageHexString, (err, results) => {
+        if (err) {
+          console.error(err);
+          res.status(500).send({message: 'Error inserting image'});
+        } else {
+          res.send({message: 'Image inserted successfully'});
+        }
+      });
 });
 
 app.get('/image/:id', (req, res) => {
   const deviceId = req.params.id;
 
   database.getLatestImage(deviceId, (err, rows, fields) => {
-    if(err) {
+    if (err) {
       res.status(404).send('Image not found');
-    } else  {
+    } else {
       res.set('Cache-Control', 'public, max-age=60');
       res.set('Content-Type', 'image/webp');
       res.set('timestamp', rows[0].timestamp.toString());

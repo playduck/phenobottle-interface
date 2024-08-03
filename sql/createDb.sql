@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS Images (
     image_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     device_id SMALLINT UNSIGNED NOT NULL,
     timestamp DATETIME NOT NULL,
+    image_mime VARCHAR(50),
     image_data MEDIUMBLOB NOT NULL,
     INDEX idx_device_id (device_id),
     INDEX idx_timestamp (timestamp),

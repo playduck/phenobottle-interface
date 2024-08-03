@@ -51,11 +51,11 @@ function insertMeasurement(
   db.query(query, [device_id, timestamp, measurement_type, value], callback);
 }
 
-function insertImage(device_id, timestamp, image_data, callback) {
+function insertImage(device_id, timestamp, image_mime, image_data, callback) {
   const query =
-      `INSERT INTO Images (device_id, timestamp, image_data) VALUES (?, ?, X'${
+      `INSERT INTO Images (device_id, timestamp, image_mime, image_data) VALUES (?, ?, ?, X'${
           image_data}')`;
-  db.query(query, [device_id, timestamp], callback);
+  db.query(query, [device_id, timestamp, image_mime], callback);
 }
 
 function getDevices(callback) {
@@ -77,7 +77,7 @@ function getLatestImage(device_id, callback) {
 
 function getLatestMeasurements(device_id, type, amount, callback) {
   const imageQuery =
-  'SELECT * FROM Measurements WHERE device_id = ? AND measurement_type = ? ORDER BY timestamp DESC LIMIT ?';
+      'SELECT * FROM Measurements WHERE device_id = ? AND measurement_type = ? ORDER BY timestamp DESC LIMIT ?';
   db.query(imageQuery, [device_id, type, amount], callback);
 }
 

@@ -1,6 +1,6 @@
 const fs = require('fs');
 const exceljs = require('exceljs');
-const sharp = require('sharp'); // Add this line to require the sharp library
+const sharp = require('sharp');
 
 async function generateExcel(data) {
   const workbook = new exceljs.Workbook();
