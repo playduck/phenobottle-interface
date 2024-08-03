@@ -55,7 +55,6 @@ app.use(basicAuth({
   },
   unauthorizedResponse: getUnauthorizedResponse,
   challenge: true,
-  realm: '***REMOVED***-phenobottle',
 }));
 
 socket(io, database);
@@ -77,13 +76,32 @@ app.post('/measurements', (req, res) => {
 });
 
 async function convertImage(image_data, image_mime) {
-  const avifBuffer = sharp(image_data, {format: image_mime})
-  .avif({
-    quality: 50,
-    effort: 5,
-  })
-  .toFormat('avif')
-  .toBuffer()
+  const sharpImage = sharp(image_data);
+  let format;
+
+  // Determine the format of the input image
+  switch (image_mime) {
+    case 'image/webp':
+      format = 'webp';
+      break;
+    case 'image/jpeg':
+      format = 'jpeg';
+      break;
+    case 'image/png':
+      format = 'png';
+      break;
+    default:
+      throw new Error(`Unsupported image format: ${image_mime}`);
+  }
+
+  // Convert the image to the desired format (avif)
+  const avifBuffer = sharpImage
+    .toFormat(format)
+    .avif({
+      quality: 50,
+      effort: 5,
+    })
+    .toBuffer();
 
   return avifBuffer;
 }
