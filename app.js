@@ -4,6 +4,12 @@ const PORT = 8080;
 
 const express = require('express');
 const basicAuth = require('express-basic-auth');
+const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser');
+
+const { v4: uuidv4 } = require('uuid');
+const secretkey = uuidv4();
+
 const app = express();
 
 const multer = require('multer');
@@ -18,7 +24,6 @@ const sharp = require('sharp');
 const database = require('./database.js');
 const exporter = require('./exporter.js');
 const socket = require('./socket.js');
-const {time} = require('console');
 
 database.connect();
 
@@ -47,9 +52,43 @@ function getUnauthorizedResponse(req) {
       'No credentials provided'
 }
 
-app.use('/favicon.ico', express.static('public/assets/favicon.ico'));
+app.use(express.json())
+app.use(cookieParser());
 
-app.use(basicAuth({
+app.use('/favicon.ico', express.static('public/assets/favicon.ico'));
+app.use('/', express.static('public'));
+
+// Login route
+app.post('/login', (req, res) => {
+  const { username, password } = req.body;
+  if (username === '***REMOVED***' && password === '***REMOVED***') {
+
+    const token = jwt.sign({ username }, secretkey, { expiresIn: '24h' });
+    res.cookie('token', token, { httpOnly: true }); // Set the token as a cookie
+    res.status(200).send({ message: '/private/index.html' });
+
+  } else {
+
+    console.log("invalid")
+    res.status(401).send({ message: 'failure' });
+  }
+});
+
+const authenticate = (req, res, next) => {
+  const token = req.cookies.token; // Retrieve the token from the cookies
+
+  if (!token) return res.status(401).send('Token required');
+
+  jwt.verify(token, secretkey, (err, user) => {
+
+    if (err) return res.status(403).send('Invalid or expired token');
+    req.user = user;
+    next();
+
+  });
+};
+
+const basic = (basicAuth({
   users: {
     '***REMOVED***': '***REMOVED***',
   },
@@ -57,12 +96,8 @@ app.use(basicAuth({
   challenge: true,
 }));
 
-socket(io, database);
-
-app.use(express.json())
-
 // POST endpoint for temperature, CO2, and OD measurements
-app.post('/measurements', (req, res) => {
+app.post('/measurements', basic, (req, res) => {
   const {device_id, timestamp, measurement_type, value} = req.body;
   database.insertMeasurement(
       device_id, timestamp, measurement_type, value, (err, results) => {
@@ -88,6 +123,7 @@ async function convertImage(image_data, image_mime) {
     case 'image/webp':
       format = 'webp';
       break;
+    case 'image/jpg':
     case 'image/jpeg':
       format = 'jpeg';
       break;
@@ -110,7 +146,7 @@ async function convertImage(image_data, image_mime) {
 }
 
 // POST endpoint for images
-app.post('/image', upload.single('image'), async (req, res) => {
+app.post('/image', basic, upload.single('image'), async (req, res) => {
   const device_id = req.header('Device-Id');
   const timestamp = req.header('Timestamp');
   const image_mime = req.header('Form-Mime');
@@ -140,6 +176,10 @@ app.post('/image', upload.single('image'), async (req, res) => {
 
   io.emit('imageUpdate', {buffer: Array.from(avifBuffer), timestamp});
 });
+
+
+app.use(authenticate);
+socket(io, database);
 
 app.get('/image/:id', (req, res) => {
   const deviceId = req.params.id;
@@ -179,6 +219,6 @@ setInterval(() => {
       'measurementCO2', [{timestamp: Date.now(), value:  (Math.sin(Date.now() / 2000) * 0.5 + 0.5) * 1000}]);
 }, 1000);
 
-app.use('/', express.static('public'));
+app.use('/private', express.static('private'));
 
 server.listen(PORT, () => console.log(`server listening on port: ${PORT}`));
