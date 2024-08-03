@@ -12,8 +12,8 @@ async function generateExcel(data) {
 
   // Add data to devices sheet
   devicesSheet.columns = [
-    { header: 'device_id', key: 'device_id' },
-    { header: 'device_name', key: 'device_name' }
+    {header: 'device_id', key: 'device_id'},
+    {header: 'device_name', key: 'device_name'}
   ];
   data.devices.forEach((device) => {
     devicesSheet.addRow(device);
@@ -21,11 +21,11 @@ async function generateExcel(data) {
 
   // Add data to measurements sheet
   measurementsSheet.columns = [
-    { header: 'measurement_id', key: 'measurement_id' },
-    { header: 'device_id', key: 'device_id' },
-    { header: 'timestamp', key: 'timestamp' },
-    { header: 'measurement_type', key: 'measurement_type' },
-    { header: 'value', key: 'value' }
+    {header: 'measurement_id', key: 'measurement_id'},
+    {header: 'device_id', key: 'device_id'},
+    {header: 'timestamp', key: 'timestamp'},
+    {header: 'measurement_type', key: 'measurement_type'},
+    {header: 'value', key: 'value'}
   ];
   data.measurements.forEach((measurement) => {
     measurementsSheet.addRow(measurement);
@@ -33,47 +33,48 @@ async function generateExcel(data) {
 
   // Add data to images sheet
   imagesSheet.columns = [
-    { header: 'image_id', key: 'image_id' },
-    { header: 'device_id', key: 'device_id' },
-    { header: 'timestamp', key: 'timestamp' }
+    {header: 'image_id', key: 'image_id'},
+    {header: 'device_id', key: 'device_id'},
+    {header: 'timestamp', key: 'timestamp'}
   ];
 
   const column = imagesSheet.getColumn(4);
-  column.width = 200/8;
+  column.width = 200 / 8;
 
+  let position = 1;
   const imagePromises = data.images.map((image, rowIndex) => {
-    return sharp(image.image_data).toFormat('png').toBuffer().then((pngBuffer) => {
-      imagesSheet.addRow({
-        image_id: image.image_id,
-        device_id: image.device_id,
-        timestamp: image.timestamp
-      }).commit();
+    return sharp(image.image_data)
+        .toFormat('jpg')
+        .toBuffer()
+        .then((imgBuffer) => {
+          const imageId = workbook.addImage({
+            buffer: imgBuffer,
+            extension: 'jpg',
+          });
 
-      const imageId = workbook.addImage({
-        buffer: pngBuffer,
-        extension: 'jpg',
-    });
+          imagesSheet.addRow({
+                image_id: image.image_id,
+                device_id: image.device_id,
+                timestamp: image.timestamp
+           });
 
-    const imageIndex = rowIndex + 2; // +1 for 0 indexing, +1 to skip header
+          imagesSheet.addImage(imageId,
+            {  tl: { col: 3, row: position },
+            ext: { width: 16*100/9, height: 100 }, // FIXME
+            editAs: 'absolute'}
+          );
+          position++;
 
-    imagesSheet.addImage(
-        imageId,
-        `D${imageIndex}:D${imageIndex}`,
-        {
-            width: 80,
-            height: 60
-        }
-    );
+          const row = imagesSheet.getRow(position);
+          row.height = 100;
 
-    const row = imagesSheet.getRow(imageIndex);
-    row.height = 100
+        });
+        });
 
-    });
-  });
+    await Promise.all(imagePromises);
 
-  await Promise.all(imagePromises);
-
-  return workbook;
+    return workbook;
 }
 
-module.exports = {generateExcel}
+module.exports = {
+    generateExcel}

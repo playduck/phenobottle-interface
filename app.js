@@ -156,12 +156,13 @@ app.get('/image/:id', (req, res) => {
   });
 });
 
-app.get('/raw', async (req, res) => {
+app.get('/export', async (req, res) => {
   const data = await database.getAllData();
   const workbook = await exporter.generateExcel(data);
 
   const excelBuffer = await workbook.xlsx.writeBuffer();
   res.setHeader('Content-Disposition', 'attachment; filename="data.xlsx"');
+  res.set('Cache-Control', 'public, max-age=0');
   res.setHeader(
       'Content-Type',
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');

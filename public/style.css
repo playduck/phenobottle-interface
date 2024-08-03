@@ -40,6 +40,12 @@ body {
     grid-template-rows: auto 1fr auto;
 }
 
+a,
+a:visited {
+    text-decoration: none!important;
+    color: unset!important;
+}
+
 button {
     padding: 0.25em;
     margin: 0.25em;
