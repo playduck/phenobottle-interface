@@ -145,8 +145,8 @@ app.get('/image/:id', (req, res) => {
   const deviceId = req.params.id;
 
   database.getLatestImage(deviceId, (err, rows, fields) => {
-    if (err) {
-      res.status(404).send('Image not found');
+    if (err || rows.length < 1) {
+      res.status(404).send(`Image not found for id ${deviceId}`);
     } else {
       res.set('Cache-Control', 'public, max-age=60');
       res.set('Content-Type', 'image/webp');
