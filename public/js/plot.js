@@ -20,6 +20,9 @@ let materModeEnabled = false;
 const materModeStatus = document.getElementById("mater-mode-status");
 const materModeButton = document.getElementById("mater-mode-button");
 
+const connectionElement = document.getElementById("connection");
+const hostTimeElement = document.getElementById("time");
+
 const tempData = new vis.DataSet({type: {start: 'ISODate', end: 'ISODate'}});
 const gasData = new vis.DataSet({type: {start: 'ISODate', end: 'ISODate'}});
 const odData = new vis.DataSet({type: {start: 'ISODate', end: 'ISODate'}});
@@ -222,14 +225,13 @@ function y(x) {
       (Math.tanh((Math.sin(x / 2) + Math.cos(x / 4)) * 2 * Math.random()) + 1);
 }
 
-function addTempData() {
-  const now = new Date(vis.moment());
-  const value = 60 * y(now / 5000) - 10;
+function addTempData(timestamp, value) {
+  const date = new Date(timestamp);
 
-  const nowString = `${zeroPad(now.getDate(),2)}-${zeroPad(now.getHours(),2)}:${zeroPad(now.getMinutes(),2)}:${zeroPad(now.getSeconds(), 2)}:${zeroPad(now.getMilliseconds(), 3)}`;
+  const timeString = `${zeroPad(date.getDate(),2)}-${zeroPad(date.getHours(),2)}:${zeroPad(date.getMinutes(),2)}:${zeroPad(date.getSeconds(), 2)}:${zeroPad(date.getMilliseconds(), 3)}`;
   const valString = value.toFixed(1) + "°C";
   tempData.add({
-    x: now,
+    x: date,
     y: value,
     group: 'Temperature',
     label: {
@@ -243,21 +245,20 @@ function addTempData() {
   const newRow = document.createElement('tr');
   newRow.innerHTML = `
   <tr>
-    <td>${nowString}</td>
+    <td>${timeString}</td>
     <td>${valString}</td>
   </tr>
   `;
   tempTableBody.insertBefore(newRow, tempTableBody.firstChild);
 }
 
-function addGasData() {
-  const now = new Date(vis.moment());
-  const value = y(now / 500) * 800;
+function addGasData(timestamp, value) {
+  const time = new Date(timestamp);
 
-  const nowString = `${zeroPad(now.getDate(),2)}-${zeroPad(now.getHours(),2)}:${zeroPad(now.getMinutes(),2)}:${zeroPad(now.getSeconds(), 2)}:${zeroPad(now.getMilliseconds(), 3)}`;
+  const timeString = `${zeroPad(time.getDate(),2)}-${zeroPad(time.getHours(),2)}:${zeroPad(time.getMinutes(),2)}:${zeroPad(time.getSeconds(), 2)}:${zeroPad(time.getMilliseconds(), 3)}`;
   const valString = (value).toFixed(2) + "ppm";
   gasData.add({
-    x: now,
+    x: time,
     y: value,
     group: 'CO2',
     label: {
@@ -271,21 +272,20 @@ function addGasData() {
   const newRow = document.createElement('tr');
   newRow.innerHTML = `
   <tr>
-    <td>${nowString}</td>
+    <td>${timeString}</td>
     <td>${valString}</td>
   </tr>
   `;
   gasTableBody.insertBefore(newRow, gasTableBody.firstChild);
 }
 
-function addOdData() {
-  const now = new Date(vis.moment());
-  const value = y(now / 1000);
+function addOdData(timestamp, value) {
+  const time = new Date(timestamp);
 
-  const nowString = `${zeroPad(now.getDate(),2)}-${zeroPad(now.getHours(),2)}:${zeroPad(now.getMinutes(),2)}:${zeroPad(now.getSeconds(), 2)}:${zeroPad(now.getMilliseconds(), 3)}`;
+  const timeString = `${zeroPad(time.getDate(),2)}-${zeroPad(time.getHours(),2)}:${zeroPad(time.getMinutes(),2)}:${zeroPad(time.getSeconds(), 2)}:${zeroPad(time.getMilliseconds(), 3)}`;
   const valString = (value * 100).toFixed(1) + "%";
   odData.add({
-    x: now,
+    x: time,
     y: value,
     group: 'OD750',
     label: {
@@ -299,29 +299,21 @@ function addOdData() {
   const newRow = document.createElement('tr');
   newRow.innerHTML = `
   <tr>
-    <td>${nowString}</td>
+    <td>${timeString}</td>
     <td>${valString}</td>
   </tr>
   `;
   odTableBody.insertBefore(newRow, odTableBody.firstChild);
 }
 
-setInterval(addTempData, 543);
-setInterval(addGasData, 1026);
-setInterval(addOdData, 2665);
+// setInterval(addTempData, 543);
+// setInterval(addGasData, 1026);
+// setInterval(addOdData, 2665);
 
 cameraContainer.onclick = () => {
   document.body.classList.toggle('fullscreen');
 };
 
-// function getCameraImage() {
-//   if(!document.body.classList.contains("offline"))  {
-//     // append data to image, to bust the cache
-//     const imageUrl = `/image/${device_id}?t=${Date.now()}`;
-//     cameraContainer.style.setProperty('--url', `url(${imageUrl})`);
-//   }
-// }
-// setInterval(getCameraImage, 10 * 1000); // update every 10 seconds
 
 sign.onclick = () => {
   const dino = document.createElement('iframe');
@@ -356,15 +348,20 @@ const socket = io({extraHeaders: {
 const connectMessage = () => {
   socket.emit('deviceListRequest');
   socket.emit('imageRequest', device_id);
-
+  socket.emit("measurementRequest", device_id, "temperature", 100);
+  socket.emit("measurementRequest", device_id, "CO2", 100);
+  socket.emit("measurementRequest", device_id, "OD", 100);
 };
 
 socket.on('connect', connectMessage);
 socket.on('reconnect', connectMessage);
 
+socket.on("failure", (err) => {
+  console.error(err)
+})
+
 const deviceListElement = document.getElementById("device-id");
 socket.on('deviceList', (devices) => {
-  console.log(devices)
   for(const device in devices)  {
     const optionItem = document.createElement("option");
     optionItem.value = devices[device].device_id;
@@ -386,12 +383,25 @@ socket.on('imageUpdate', (data) => {
   timestampDiv.innerText = new Date(data.timestamp).toISOString();
 });
 
+socket.on("measurementTemperature", (rows) => {
+  for(const row in rows)  {
+    addTempData(rows[row].timestamp, rows[row].value);
+  }
+});
+socket.on("measurementCO2", (rows) => {
+  for(const row in rows)  {
+    addGasData(rows[row].timestamp, rows[row].value);
+  }
+});
+socket.on("measurementOD", (rows) => {
+  for(const row in rows)  {
+    addOdData(rows[row].timestamp, rows[row].value);
+  }
+});
+
 // Handle heartbeat request from server
 let rtt_filtered = -1;
 const rtt_alpha = 0.5;
-const connectionElement = document.getElementById("connection");
-const hostTimeElement = document.getElementById("time");
-
 socket.on('heartbeatRequest', (serverTimestamp) => {
   const startTime = Date.now();
   socket.emit('heartbeat');

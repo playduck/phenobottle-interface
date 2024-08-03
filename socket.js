@@ -4,9 +4,17 @@ module.exports = (io, database) => {
   io.on('connection', (socket) => {
     console.log('a user connected');
 
+    function failureMessage(err) {
+      socket.emit("failure", err);
+    }
+
+    function capitalizeFirstLetter(string) {
+      return string.charAt(0).toUpperCase() + string.slice(1);
+    }
+
     socket.on("deviceListRequest", () => {
         database.getDevices((err, rows, fields) => {
-            if(err) {return;}
+            if(err) {failureMessage(err);}
 
             socket.emit('deviceList', rows);
         });
@@ -14,14 +22,22 @@ module.exports = (io, database) => {
 
     socket.on("imageRequest", (device_id) => {
         database.getLatestImage(device_id, (err, rows, fields) => {
-            if(err) {return;}
+            if(err) {failureMessage(err);}
 
             const buffer = Buffer.from(rows[0].image_data);
             const timestamp = rows[0].timestamp;
 
             socket.emit('imageUpdate', { buffer: Array.from(buffer), timestamp });
         });
-    })
+    });
+
+    socket.on("measurementRequest", (device_id, type, amount) => {
+      database.getLatestMeasurements(device_id, type, amount, (err, rows, fields) => {
+        if(err) {failureMessage(err);}
+
+        socket.emit(`measurement${capitalizeFirstLetter(type)}`, rows);
+      });
+    });
 
     // Handle heartbeat
     socket.on('heartbeat', () => {

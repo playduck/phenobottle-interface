@@ -73,6 +73,10 @@ app.post('/measurements', (req, res) => {
           res.send({message: 'Measurement inserted successfully'});
         }
       });
+
+  socket.emit(
+      `measurement${capitalizeFirstLetter(measurement_type)}`,
+      [{timestamp: timestamp, value: value}]);
 });
 
 async function convertImage(image_data, image_mime) {
@@ -95,13 +99,12 @@ async function convertImage(image_data, image_mime) {
   }
 
   // Convert the image to the desired format (avif)
-  const avifBuffer = sharpImage
-    .toFormat(format)
-    .avif({
-      quality: 50,
-      effort: 5,
-    })
-    .toBuffer();
+  const avifBuffer = sharpImage.toFormat(format)
+                         .avif({
+                           quality: 50,
+                           effort: 5,
+                         })
+                         .toBuffer();
 
   return avifBuffer;
 }
@@ -134,6 +137,8 @@ app.post('/image', upload.single('image'), async (req, res) => {
           res.send({message: 'Image inserted successfully'});
         }
       });
+
+  io.emit('imageUpdate', {buffer: Array.from(avifBuffer), timestamp});
 });
 
 app.get('/image/:id', (req, res) => {
@@ -163,6 +168,15 @@ app.get('/raw', async (req, res) => {
   res.send(excelBuffer);
 });
 
+// FIXME
+setInterval(() => {
+  io.emit(
+      'measurementTemperature',
+      [{timestamp: Date.now(), value: (Math.sin(Date.now() / 2000) * 0.5 + 0.5) * 60 - 10}]);
+  io.emit('measurementOD', [{timestamp: Date.now(), value:  Math.sin(Date.now() / 500) * 0.5 + 0.5}]);
+  io.emit(
+      'measurementCO2', [{timestamp: Date.now(), value:  (Math.sin(Date.now() / 5000) * 0.5 + 0.5) * 1000}]);
+}, 1000);
 
 app.use('/', express.static('public'));
 
