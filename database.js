@@ -44,28 +44,40 @@ function createDb() {
   });
 }
 
-function getTables() {
-  runCommand('SHOW FULL TABLES;', (err, rows, fields) => {
-    if (err) throw err;
-
-    for (const row in rows) {
-      console.log(rows[row])
-    }
-  });
-}
-
 function insertMeasurement(
     device_id, timestamp, measurement_type, value, callback) {
   const query =
       `INSERT INTO Measurements (device_id, timestamp, measurement_type, value) VALUES (?, ?, ?, ?)`;
-  db.query(
-      query, [device_id, timestamp, measurement_type, value], callback);
+  db.query(query, [device_id, timestamp, measurement_type, value], callback);
 }
 
 function insertImage(device_id, timestamp, image_data, callback) {
   const query =
-      `INSERT INTO Images (device_id, timestamp, image_data) VALUES (?, ?, X'${image_data}')`;
+      `INSERT INTO Images (device_id, timestamp, image_data) VALUES (?, ?, X'${
+          image_data}')`;
   db.query(query, [device_id, timestamp], callback);
+}
+
+function getDevices(callback) {
+  const deviceQuery = 'SELECT * FROM Devices';
+  db.query(deviceQuery, callback);
+}
+
+function getDeviceTasks(device_id, callback) {
+  const taskQuery = 'SELECT * FROM Tasks WHERE device_id = ?';
+  db.query(taskQuery, [device_id], callback);
+}
+
+function getLatestImage(device_id, callback) {
+  const imageQuery =
+      'SELECT * FROM Images WHERE device_id = ? ORDER BY timestamp DESC LIMIT 1';
+  db.query(imageQuery, [device_id], callback);
+}
+
+function getLatestMeasurements(device_id, type, amount, callback) {
+  const imageQuery =
+  'SELECT * FROM Measurements WHERE device_id = ? AND measurement_type = ? ORDER BY timestamp DESC LIMIT ?';
+  db.query(imageQuery, [device_id, type, amount], callback);
 }
 
 async function getAllData() {
@@ -118,5 +130,9 @@ module.exports = {
   getTables,
   insertMeasurement,
   insertImage,
+  getDevices,
+  getDeviceTasks,
+  getLatestImage,
+  getLatestMeasurements,
   getAllData
 }

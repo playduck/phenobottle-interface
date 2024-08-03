@@ -24,14 +24,34 @@ CREATE TABLE IF NOT EXISTS Images (
     CONSTRAINT fk_device_id_img FOREIGN KEY (device_id) REFERENCES Devices (device_id)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
-CREATE EVENT IF NOT EXISTS PurgeOldImages ON SCHEDULE every 1 day ON COMPLETION PRESERVE DO
+CREATE TABLE IF NOT EXISTS Tasks (
+    task_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    device_id SMALLINT UNSIGNED NOT NULL,
+    task_name VARCHAR(50) NULL task_start DATETIME NOT NULL,
+    task_type ENUM('temperature', 'CO2', 'OD') NOT NULL,
+    task_start DATETIME NOT NULL,
+    task_end DATETIME NOT NULL,
+    recurring BOOLEAN NOT NULL,
+    INDEX idx_device_id (device_id),
+    INDEX idx_timestamp (task_start),
+    CONSTRAINT fk_device_id_task FOREIGN KEY (device_id) REFERENCES Devices (device_id)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8;
+
+CREATE EVENT IF NOT EXISTS PurgeOldImages ON SCHEDULE every 1 hour ON COMPLETION PRESERVE DO
 DELETE FROM
     Images
 WHERE
-    timestamp < (NOW() - INTERVAL 2 DAY);
+    timestamp < (NOW() - INTERVAL 1 DAY);
 
-CREATE EVENT IF NOT EXISTS PurgeOldMeasurements ON SCHEDULE every 1 day ON COMPLETION PRESERVE DO
+CREATE EVENT IF NOT EXISTS PurgeOldMeasurements ON SCHEDULE every 1 hour ON COMPLETION PRESERVE DO
 DELETE FROM
     Measurements
 WHERE
     timestamp < (NOW() - INTERVAL 7 DAY);
+
+CREATE EVENT IF NOT EXISTS PurgeOldTasks ON SCHEDULE every 1 hour ON COMPLETION PRESERVE DO
+DELETE FROM
+    Tasks
+WHERE
+    recurring = 0
+    AND task_end < (NOW() - INTERVAL 7 DAY);
