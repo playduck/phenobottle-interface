@@ -419,20 +419,24 @@ materModeButton.onclick =
 const socket = io();
 
 const connectMessage = () => {
-  socket.emit('deviceListRequest');
-  socket.emit('imageRequest', device_id);
-  socket.emit('measurementRequest', device_id, 'temperature', 100);
-  socket.emit('measurementRequest', device_id, 'CO2', 100);
-  socket.emit('measurementRequest', device_id, 'OD', 100);
+  setTimeout(() => {
+    socket.emit('deviceListRequest');
+    socket.emit('imageRequest', device_id);
+    socket.emit('measurementRequest', device_id, 'temperature', 100);
+    socket.emit('measurementRequest', device_id, 'CO2', 100);
+    socket.emit('measurementRequest', device_id, 'OD', 100);
+  }, 200);
 };
 
 socket.on('connect', connectMessage);
 socket.on('reconnect', connectMessage);
 
-socket.on('failure', (err) => {console.error(err)})
+socket.on('failure', console.error);
 
 const deviceListElement = document.getElementById('device-id');
 socket.on('deviceList', (devices) => {
+  // device_id = devices[0].device_id;
+
   for (const device in devices) {
     const optionItem = document.createElement('option');
     optionItem.value = devices[device].device_id;

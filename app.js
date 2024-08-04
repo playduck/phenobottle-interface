@@ -6,8 +6,6 @@ const express = require('express');
 const basicAuth = require('express-basic-auth');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
-const cookie = require('cookie');
-
 
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
@@ -60,11 +58,15 @@ function getUnauthorizedResponse(req) {
 app.use(express.json())
 app.use(cookieParser('secret'));
 
+const authenticateToken = (token, callback) => {
+  jwt.verify(token, secretkey, callback);
+}
+
 const authenticate = (req, res, next) => {
   const token = req.cookies.token;
 
   if (token) {
-    jwt.verify(token, secretkey, (err, user) => {
+    authenticateToken(token, (err, user) => {
       if (err) {
         req.user = null;
       } else {
@@ -79,22 +81,6 @@ const authenticate = (req, res, next) => {
   }
 };
 
-const authenticateSocket = (socket, next) => {
-
-  cookies = cookie.parse(socket.handshake.headers.cookie);
-  if (cookies && cookies.token){
-    jwt.verify(cookies.token, secretkey, function(err, user) {
-      if (err) {
-        return next(new Error('Authentication error'));
-      }
-      socket.user = user;
-      next();
-    });
-  }
-  else {
-    next(new Error('Authentication error'));
-  }
-};
 
 const basic = (basicAuth({
   users: {
@@ -230,7 +216,7 @@ app.post('/image', basic, upload.single('image'), async (req, res) => {
   io.emit('imageUpdate', {buffer: Array.from(avifBuffer), timestamp});
 });
 
-socket(io,authenticateSocket, database);
+socket(io, authenticateToken, database);
 
 app.get('/image/:id', (req, res) => {
   if(!req.user)  {

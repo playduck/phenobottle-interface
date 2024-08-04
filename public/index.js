@@ -66,7 +66,7 @@ function attemptLogin() {
       displayMessage("Login success. Please Wait...", colors.SUCCESS);
       setTimeout(() => {
         location.href = data.message;
-      }, 2000);
+      }, 500);
     }
   })
   .catch((err) => console.error(err));

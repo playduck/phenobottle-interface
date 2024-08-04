@@ -1,8 +1,28 @@
-module.exports = (io, authenticate, database) => {
+const cookie = require('cookie');
+
+module.exports = (io, authenticateToken, database) => {
   console.log("listening for new ws connections")
+
+  const authenticate = (socket, callback) => {
+    if(socket.handshake?.headers?.cookie)  {
+      token = cookie.parse(socket.handshake.headers.cookie)?.token;
+        authenticateToken(token, (err, user) => {
+          if (err) {
+            socket.user = null;
+            return callback(new Error('Authentication error'));
+          }
+          socket.user = user;
+          callback();
+        });
+      } else {
+        socket.user = null;
+        callback(new Error('Authentication error'));
+      }
+  }
 
   io.use(authenticate).on('connection', (socket) => {
     console.log('a user connected');
+    let queueTokenCheck = false;
 
     function failureMessage(err) {
       socket.emit("failure", err);
@@ -11,6 +31,23 @@ module.exports = (io, authenticate, database) => {
     function capitalizeFirstLetter(string) {
       return string.charAt(0).toUpperCase() + string.slice(1);
     }
+
+    socket.use((_, next) =>  {
+
+      if(queueTokenCheck) {
+        authenticate(socket, (err) => {
+          if(err) {
+            socket.disconnect();
+            next(err);
+          } else  {
+            queueTokenCheck = false;
+            next();
+          }
+        });
+      } else  {
+        next();
+      }
+    });
 
     socket.on("deviceListRequest", () => {
         database.getDevices((err, rows, fields) => {
@@ -49,7 +86,8 @@ module.exports = (io, authenticate, database) => {
 
     // Send heartbeat request to client every second
     setInterval(() => {
+        queueTokenCheck = true;
         socket.emit('heartbeatRequest', Date.now());
-    }, 1000);
+    }, 2500);
   });
 };
