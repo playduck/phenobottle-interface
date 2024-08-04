@@ -6,9 +6,14 @@ const express = require('express');
 const basicAuth = require('express-basic-auth');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
+const cookie = require('cookie');
 
-const { v4: uuidv4 } = require('uuid');
-const secretkey = uuidv4();
+
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
+
+const crypto = require('crypto');
+const secretkey = crypto.randomBytes(256).toString('base64');
 
 const app = express();
 
@@ -53,39 +58,42 @@ function getUnauthorizedResponse(req) {
 }
 
 app.use(express.json())
-app.use(cookieParser());
-
-app.use('/favicon.ico', express.static('public/assets/favicon.ico'));
-app.use('/', express.static('public'));
-
-// Login route
-app.post('/login', (req, res) => {
-  const { username, password } = req.body;
-  if (username === '***REMOVED***' && password === '***REMOVED***') {
-
-    const token = jwt.sign({ username }, secretkey, { expiresIn: '24h' });
-    res.cookie('token', token, { httpOnly: true }); // Set the token as a cookie
-    res.status(200).send({ message: '/private/index.html' });
-
-  } else {
-
-    console.log("invalid")
-    res.status(401).send({ message: 'failure' });
-  }
-});
+app.use(cookieParser('secret'));
 
 const authenticate = (req, res, next) => {
-  const token = req.cookies.token; // Retrieve the token from the cookies
+  const token = req.cookies.token;
 
-  if (!token) return res.status(401).send('Token required');
-
-  jwt.verify(token, secretkey, (err, user) => {
-
-    if (err) return res.status(403).send('Invalid or expired token');
-    req.user = user;
+  if (token) {
+    jwt.verify(token, secretkey, (err, user) => {
+      if (err) {
+        req.user = null;
+      } else {
+        req.user = user;
+      }
+      next();
+    });
+  }
+  else {
+    req.user = null;
     next();
+  }
+};
 
-  });
+const authenticateSocket = (socket, next) => {
+
+  cookies = cookie.parse(socket.handshake.headers.cookie);
+  if (cookies && cookies.token){
+    jwt.verify(cookies.token, secretkey, function(err, user) {
+      if (err) {
+        return next(new Error('Authentication error'));
+      }
+      socket.user = user;
+      next();
+    });
+  }
+  else {
+    next(new Error('Authentication error'));
+  }
 };
 
 const basic = (basicAuth({
@@ -95,6 +103,51 @@ const basic = (basicAuth({
   unauthorizedResponse: getUnauthorizedResponse,
   challenge: true,
 }));
+
+app.use('/favicon.ico', express.static('public/assets/favicon.ico'));
+
+app.use(authenticate);
+
+app.use('/', (req, res, next) => {
+  const rootDir = req.user ? './private' : './public';
+  express.static(rootDir)(req, res, next);
+});
+
+const users = [
+  {username: "***REMOVED***", plainPassword: "***REMOVED***", hashedPassword: ""},
+  {username: "***REMOVED***", plainPassword: "***REMOVED***", hashedPassword: ""},
+  {username: "***REMOVED***", plainPassword: "***REMOVED***", hashedPassword: ""},
+];
+
+for(const user in users)  {
+  users[user].hashedPassword = bcrypt.hashSync(users[user].plainPassword, saltRounds);
+}
+
+// Login route
+app.post('/login', async (req, res) => {
+  const {username, password} = req.body;
+
+  for(const user in users)  {
+    if (username === users[user].username) {
+      if((await bcrypt.compare(password, users[user].hashedPassword)) === true) {
+          const token = jwt.sign({username}, secretkey, {expiresIn: '24h'});
+
+          res.cookie('token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+          });
+
+          res.status(200).send({message: '/'});
+          return;
+        }
+    }
+  }
+
+  // deter side-channel attacks
+  await new Promise(resolve => setTimeout(resolve, Math.random() * 1000));
+  res.status(401).send({message: 'failure'});
+
+});
 
 // POST endpoint for temperature, CO2, and OD measurements
 app.post('/measurements', basic, (req, res) => {
@@ -177,11 +230,13 @@ app.post('/image', basic, upload.single('image'), async (req, res) => {
   io.emit('imageUpdate', {buffer: Array.from(avifBuffer), timestamp});
 });
 
-
-app.use(authenticate);
-socket(io, database);
+socket(io,authenticateSocket, database);
 
 app.get('/image/:id', (req, res) => {
+  if(!req.user)  {
+    return res.status(401).redirect("/?failed=unauthorized");
+  }
+
   const deviceId = req.params.id;
 
   database.getLatestImage(deviceId, (err, rows, fields) => {
@@ -197,6 +252,10 @@ app.get('/image/:id', (req, res) => {
 });
 
 app.get('/export', async (req, res) => {
+  if(!req.user)  {
+    return res.status(401).redirect("/?failed=unauthorized");
+  }
+
   const data = await database.getAllData();
   const workbook = await exporter.generateExcel(data);
 
@@ -209,16 +268,24 @@ app.get('/export', async (req, res) => {
   res.send(excelBuffer);
 });
 
+app.get("*", (req, res) => {
+  return res.status(404).redirect("/?failed=unauthorized");
+})
+
 // FIXME
 setInterval(() => {
+  io.emit('measurementTemperature', [{
+            timestamp: Date.now(),
+            value: (Math.sin(Date.now() / 5000) * 0.5 + 0.5) * 60 - 10
+          }]);
   io.emit(
-      'measurementTemperature',
-      [{timestamp: Date.now(), value: (Math.sin(Date.now() / 5000) * 0.5 + 0.5) * 60 - 10}]);
-  io.emit('measurementOD', [{timestamp: Date.now(), value:  Math.sin(Date.now() / 500) * 0.5 + 0.5}]);
-  io.emit(
-      'measurementCO2', [{timestamp: Date.now(), value:  (Math.sin(Date.now() / 2000) * 0.5 + 0.5) * 1000}]);
+      'measurementOD',
+      [{timestamp: Date.now(), value: Math.sin(Date.now() / 500) * 0.5 + 0.5}]);
+  io.emit('measurementCO2', [{
+            timestamp: Date.now(),
+            value: (Math.sin(Date.now() / 2000) * 0.5 + 0.5) * 1000
+          }]);
 }, 1000);
 
-app.use('/private', express.static('private'));
 
 server.listen(PORT, () => console.log(`server listening on port: ${PORT}`));

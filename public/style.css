@@ -37,6 +37,7 @@ body {
     overflow: hidden;
 }
 
+
 a,
 a:visited {
     text-decoration: none!important;
@@ -105,7 +106,7 @@ main {
 #error-message {
     opacity: 0;
     will-change: opacity;
-    transition: opacity 700ms;
+    transition: 700ms;
     color: var(--warr-red);
     padding: 0.25em;
 }
@@ -164,4 +165,8 @@ main {
 #login {
     padding: 0.5em 2em;
     margin: 1em;
+}
+
+.waiting {
+    cursor: wait!important;
 }

@@ -6,6 +6,10 @@
     <title>WARR D.I.N.O.labs Login</title>
     <link rel="icon" type="image/x-icon" href="favicon.ico">
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+
     <meta name="theme-color" content="#0781B0">
     <link rel="stylesheet" href="style.css">
     <style id="root">
@@ -52,6 +56,7 @@
     <main class="center">
       <div>
         <div id="title" class="center">
+          <a target="_blank" rel="noopener noreferrer" href="https://warr.de/">
           <svg class="logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 70 45.7">
             <defs><style>.g{fill:#0761b0;}.g,.h,.i{stroke-width:0px;}.h{fill:#9bdafa;}.i{fill:#6ab2e1;}</style></defs><g
               id="c"><path class="g"
@@ -63,6 +68,7 @@
                 points="28.4 15.8 31.7 19.1 28.6 22.3 31.7 25.5 28.4 28.8 21.9 22.3 28.4 15.8" /><polygon
                 class="h" points="44.6 -.4 67.4 22.3 44.6 45.1 41.3 41.7 60.7 22.3 41.3 2.9 44.6 -.4" /></g>
           </svg>
+          </a>
           <h1>WARR D.I.N.O.labs</h1>
         </div>
         <div id="credentials" class="center">
@@ -74,8 +80,8 @@
             <label for>Password</label>
             <input type="password" name="password" id="password">
           </div>
-          <div id="error-message">
-            The username or password is incorrect. Please try again.
+          <div id="error-message" style="opacity: 0;">
+            Unknown Error. Please try again.
           </div>
           <button id="login">Login</button>
         </div>
@@ -83,8 +89,12 @@
     </main>
 
     <footer>
-      2024 WARR ***REMOVED***
-      <a target="_blank" noopener noreferer href="https://robin-prillwitz.de">
+      <span>
+      2024 <a href="https://warr.de/projekte/***REMOVED***/" target="_blank" rel="noopener noreferrer">
+        WARR ***REMOVED***
+      </a>
+      </span>
+      <a target="_blank" rel="noopener noreferrer" href="https://robin-prillwitz.de">
         <svg id="sign" xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 210.9121 88.3112"><defs><style>.d,.e{stroke-width:0px;}.e{fill:var(--background);}</style></defs><g
             id="c"><path class="d"
@@ -99,48 +109,5 @@
               d="m129.4155,75.3249c0-5.9372.0473-11.3758-.0237-16.8128-.0277-2.1197,1.1139-2.9919,2.9539-3.2314,1.3061-.17,2.6389-.2693,3.953-.22,6.641.2494,9.2926,5.1699,5.9759,11.0205-2.2236,3.9225-7.6208,7.8902-12.8591,9.2436Z" /></g></svg></a>
     </footer>
   </body>
-  <script defer>
-    const urlParams = new URLSearchParams(window.location.search);
-    const loginFailed = urlParams.get('login_failed');
-    if (loginFailed != undefined) {
-      setTimeout(() => {
-        document.getElementById('error-message').style.opacity = 1;
-      }, 100);
-    }
-
-    document.getElementById("login").addEventListener("click", attemptLogin);
-    document.addEventListener("keypress", function(event) {
-      if (event.key === "Enter") {
-        attemptLogin();
-      }
-    });
-
-    function attemptLogin() {
-      const username = document.getElementById('username');
-      const password = document.getElementById('password');
-
-      const usernameText = username.value.toString();
-      const passwordText = password.value.toString();
-
-      fetch('/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username:usernameText, password:passwordText }),
-      })
-      .then((res) => res.json())
-      .then((data) => {
-        console.log(data)
-
-        if (data.message === "failure") {
-          document.getElementById('error-message').style.opacity = 1;
-          username.value = "";
-          password.value = "";
-        } else  {
-          location.href = data.message;
-        }
-      })
-      .catch((err) => console.error(err));
-    }
-
-  </script>
+  <script src="index.js" defer></script>
 </html>

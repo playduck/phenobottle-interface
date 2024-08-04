@@ -416,8 +416,7 @@ materModeButton.onclick =
       }
     }
 
-const socket = io(
-    {extraHeaders: {Authorization: 'Basic ' + btoa('***REMOVED***:***REMOVED***')}});
+const socket = io();
 
 const connectMessage = () => {
   socket.emit('deviceListRequest');
@@ -450,7 +449,6 @@ socket.on('imageUpdate', (data) => {
 
   cameraContainer.style.setProperty('--url', `url(${url})`);
 
-  // Display the timestamp in a div
   const timestampDiv = document.getElementById('camera-timestamp');
   timestampDiv.innerText = new Date(data.timestamp).toISOString();
 });

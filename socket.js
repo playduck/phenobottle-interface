@@ -1,7 +1,7 @@
-module.exports = (io, database) => {
+module.exports = (io, authenticate, database) => {
   console.log("listening for new ws connections")
 
-  io.on('connection', (socket) => {
+  io.use(authenticate).on('connection', (socket) => {
     console.log('a user connected');
 
     function failureMessage(err) {
