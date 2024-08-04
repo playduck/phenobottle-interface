@@ -511,3 +511,14 @@ socket.on('disconnect', () => {
   document.body.classList.add('offline');
   rtt_filtered = -1;
 });
+
+document.getElementById("logout").addEventListener("click", (e) => {
+  fetch('/logout', {
+    method: 'POST'
+  })
+  .then((res) => res.json())
+  .then((data) => {
+    location.href = data.message;
+  })
+  .catch(console.err);
+});

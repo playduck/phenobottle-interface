@@ -55,14 +55,12 @@ function attemptLogin() {
   .then((res) => res.json())
   .then((data) => {
     document.body.classList.remove("waiting");
-    console.log(data)
 
     if (data.message === "failure") {
       displayMessage("The Username or Password is incorrect. Please try again.", colors.ERROR);
       username.value = "";
       password.value = "";
     } else  {
-      console.log("success");
       displayMessage("Login success. Please Wait...", colors.SUCCESS);
       setTimeout(() => {
         location.href = data.message;

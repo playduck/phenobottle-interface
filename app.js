@@ -128,12 +128,16 @@ app.post('/login', async (req, res) => {
         }
     }
   }
-
   // deter side-channel attacks
   await new Promise(resolve => setTimeout(resolve, Math.random() * 1000));
   res.status(401).send({message: 'failure'});
-
 });
+
+app.post('/logout', (req, res) => {
+  res.cookie('token', '', { expires: new Date(Date.now() - 1000) }); // Set the cookie to expire immediately
+  res.status(200).send({ message: '/' });
+});
+
 
 // POST endpoint for temperature, CO2, and OD measurements
 app.post('/measurements', basic, (req, res) => {
