@@ -138,7 +138,6 @@ app.post('/logout', (req, res) => {
   res.status(200).send({ message: '/' });
 });
 
-
 // POST endpoint for temperature, CO2, and OD measurements
 app.post('/measurements', basic, (req, res) => {
   const {device_id, timestamp, measurement_type, value} = req.body;

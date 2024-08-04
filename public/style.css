@@ -32,11 +32,20 @@ body {
     padding: 0;
     width: 100vw;
     height: 100vh;
-    background-size: 100% 100%;
     background-position: 0px 0px, 0px 0px, 0px 0px, 0px 0px, 0px 0px;
     overflow: hidden;
+    background-image: url(assets/background.avif);
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
 }
 
+#card {
+    border-radius: var(--border-radius);
+    background-color: transparent;
+    backdrop-filter: blur(10px) contrast(1.05) saturate(160%);
+    -webkit-backdrop-filter: blur(10px) contrast(1.05) saturate(160%);
+}
 
 a,
 a:visited {
@@ -48,7 +57,7 @@ button {
     padding: 0.25em;
     margin: 0.25em;
     min-width: 5em;
-    background-color: var(--very-light-gray);
+    background-color: color-mix(in srgb, var(--very-light-gray), transparent 50%);
     border: 1px solid var(--warr-blue-1);
     border-radius: var(--border-radius);
     color: var(--warr-black);
@@ -72,7 +81,7 @@ button:active {
 }
 
 #credentials {
-    margin: 2em 1em
+    margin: 3em 1em
 }
 
 footer {
@@ -104,12 +113,13 @@ main {
 }
 
 #error-message {
-    opacity: 0;
     font-weight: 800;
     will-change: opacity;
     transition: 700ms;
-    color: var(--warr-red);
+    width: 16em;
     padding: 0.25em;
+    text-align: center;
+    color: var(--warr-red);
 }
 
 #sign {
@@ -139,7 +149,7 @@ main {
     appearance: none;
     -webkit-appearance: none;
     -moz-appearance: textfield;
-    background-color: var(--very-light-gray);
+    background-color: color-mix(in srgb, var(--very-light-gray), transparent 50%);
     border: none;
     border-bottom: 1px solid var(--very-dark-gray);
     outline: none;
