@@ -105,6 +105,7 @@ main {
 
 #error-message {
     opacity: 0;
+    font-weight: 800;
     will-change: opacity;
     transition: 700ms;
     color: var(--warr-red);
