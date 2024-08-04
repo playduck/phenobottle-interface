@@ -61,12 +61,12 @@ module.exports = (io, authenticateToken, database) => {
         database.getLatestImage(device_id, (err, rows, fields) => {
             if(err) {failureMessage(err);}
 
-            if(rows.length > 1) {
+            if(rows.length > 0) {
               const buffer = Buffer.from(rows[0].image_data);
               const timestamp = rows[0].timestamp;
               socket.emit('imageUpdate', { buffer: Array.from(buffer), timestamp });
             } else  {
-              failureMessage("no image");
+              failureMessage(`no image for ${device_id}`);
             }
         });
     });
