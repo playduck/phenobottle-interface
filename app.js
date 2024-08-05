@@ -11,7 +11,7 @@ const bcrypt = require('bcrypt');
 const saltRounds = 10;
 
 const crypto = require('crypto');
-const secretkey = crypto.randomBytes(256).toString('base64');
+const authSecretKey = crypto.randomBytes(256).toString('base64');
 
 const app = express();
 
@@ -59,11 +59,11 @@ app.use(express.json())
 app.use(cookieParser('secret'));
 
 const authenticateToken = (token, callback) => {
-  jwt.verify(token, secretkey, callback);
+  jwt.verify(token, authSecretKey, callback);
 }
 
 const authenticate = (req, res, next) => {
-  const token = req.cookies.token;
+  const token = req.cookies["x-auth-token"];
 
   if (token) {
     authenticateToken(token, (err, user) => {
@@ -110,15 +110,15 @@ for(const user in users)  {
 }
 
 // Login route
-app.post('/login', async (req, res) => {
+app.post('/api/login', async (req, res) => {
   const {username, password} = req.body;
 
   for(const user in users)  {
     if (username === users[user].username) {
       if((await bcrypt.compare(password, users[user].hashedPassword)) === true) {
-          const token = jwt.sign({username}, secretkey, {expiresIn: '24h'});
+          const token = jwt.sign({username}, authSecretKey, {expiresIn: '6h'});
 
-          res.cookie('token', token, {
+          res.cookie('x-auth-token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
           });
@@ -133,8 +133,8 @@ app.post('/login', async (req, res) => {
   res.status(401).send({message: 'failure'});
 });
 
-app.post('/logout', (req, res) => {
-  res.cookie('token', '', { expires: new Date(Date.now() - 1000) }); // Set the cookie to expire immediately
+app.post('/api/logout', (req, res) => {
+  res.cookie('x-auth-token', '', { expires: new Date(Date.now() - 1000) }); // Set the cookie to expire immediately
   res.status(200).send({ message: '/' });
 });
 

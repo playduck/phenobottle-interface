@@ -1,11 +1,12 @@
 const cookie = require('cookie');
 
 module.exports = (io, authenticateToken, database) => {
+  let heartbeatInterval;
   console.log("listening for new ws connections")
 
   const authenticate = (socket, callback) => {
     if(socket.handshake?.headers?.cookie)  {
-      token = cookie.parse(socket.handshake.headers.cookie)?.token;
+      token = cookie.parse(socket.handshake.headers.cookie)["x-auth-token"];
         authenticateToken(token, (err, user) => {
           if (err) {
             socket.user = null;
@@ -49,6 +50,11 @@ module.exports = (io, authenticateToken, database) => {
       }
     });
 
+    socket.on("disconnect", () => {
+      console.log("user disconnect")
+      clearInterval(heartbeatInterval);
+    });
+
     socket.on("deviceListRequest", () => {
         database.getDevices((err, rows, fields) => {
             if(err) {failureMessage(err);}
@@ -88,7 +94,7 @@ module.exports = (io, authenticateToken, database) => {
     });
 
     // Send heartbeat request to client every second
-    setInterval(() => {
+    heartbeatInterval = setInterval(() => {
         queueTokenCheck = true;
         socket.emit('heartbeatRequest', Date.now());
     }, 2500);

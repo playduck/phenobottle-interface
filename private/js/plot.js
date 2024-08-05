@@ -503,8 +503,8 @@ socket.on('heartbeatRequest', (serverTimestamp) => {
   });
 });
 
-socket.on('disconnect', () => {
-  console.log('Disconnected from the server');
+socket.on('disconnect', (reason) => {
+  console.log('Disconnected from the server', reason);
   connectionElement.innerText = '';
   hostTimeElement.innerText = '-';
   document.body.classList.remove('online');
@@ -513,7 +513,7 @@ socket.on('disconnect', () => {
 });
 
 document.getElementById("logout").addEventListener("click", (e) => {
-  fetch('/logout', {
+  fetch('/api/logout', {
     method: 'POST'
   })
   .then((res) => res.json())
