@@ -448,7 +448,7 @@ socket.on('deviceList', (devices) => {
 
 socket.on('imageUpdate', (data) => {
   const buffer = new Uint8Array(data.buffer);
-  const blob = new Blob([buffer], {type: 'image/webp'});
+  const blob = new Blob([buffer], {type: 'image/avif'});
   const url = URL.createObjectURL(blob);
 
   cameraContainer.style.setProperty('--url', `url(${url})`);
@@ -513,7 +513,7 @@ socket.on('disconnect', (reason) => {
 });
 
 document.getElementById("logout").addEventListener("click", (e) => {
-  fetch('/api/logout', {
+  fetch('/api/v1/logout', {
     method: 'POST'
   })
   .then((res) => res.json())

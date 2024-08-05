@@ -110,7 +110,7 @@ for(const user in users)  {
 }
 
 // Login route
-app.post('/api/login', async (req, res) => {
+app.post('/api/v1/login', async (req, res) => {
   const {username, password} = req.body;
 
   for(const user in users)  {
@@ -133,13 +133,13 @@ app.post('/api/login', async (req, res) => {
   res.status(401).send({message: 'failure'});
 });
 
-app.post('/api/logout', (req, res) => {
+app.post('/api/v1/logout', (req, res) => {
   res.cookie('x-auth-token', '', { expires: new Date(Date.now() - 1000) }); // Set the cookie to expire immediately
   res.status(200).send({ message: '/' });
 });
 
 // POST endpoint for temperature, CO2, and OD measurements
-app.post('/measurements', basic, (req, res) => {
+app.post('/api/v1/measurements', basic, (req, res) => {
   const {device_id, timestamp, measurement_type, value} = req.body;
   database.insertMeasurement(
       device_id, timestamp, measurement_type, value, (err, results) => {
@@ -188,7 +188,7 @@ async function convertImage(image_data, image_mime) {
 }
 
 // POST endpoint for images
-app.post('/image', basic, upload.single('image'), async (req, res) => {
+app.post('/api/v1/image', basic, upload.single('image'), async (req, res) => {
   const device_id = req.header('Device-Id');
   const timestamp = req.header('Timestamp');
   const image_mime = req.header('Form-Mime');
@@ -221,7 +221,7 @@ app.post('/image', basic, upload.single('image'), async (req, res) => {
 
 socket(io, authenticateToken, database);
 
-app.get('/image/:id', (req, res) => {
+app.get('/api/v1/image/:id', (req, res) => {
   if(!req.user)  {
     return res.status(401).redirect("/?failed=unauthorized");
   }
@@ -240,7 +240,7 @@ app.get('/image/:id', (req, res) => {
   });
 });
 
-app.get('/export', async (req, res) => {
+app.get('/api/v1/export', async (req, res) => {
   if(!req.user)  {
     return res.status(401).redirect("/?failed=unauthorized");
   }
