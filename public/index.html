@@ -11,6 +11,26 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
       rel="stylesheet">
 
+
+
+    <svg xmlns="http://www.w3.org/2000/svg" version="1.5" width="1" height="1" viewPort="0 0 200 200" style="position: fixed; opacity: 0.01">
+        <!-- <filter id="f1">
+        <feGaussianBlur id="blur1" result="blurOut" in="SourceGraphic" stdDeviation="10">
+          <animate id="blur" attributeName="stdDeviation" from="10" to="30" dur="1s" begin="0s" repeatCount="indefinite" fill="freeze"/>
+        </feGaussianBlur>
+      </filter> -->
+      <filter id="f1">
+        <feComponentTransfer color-interpolation-filters="sRGB">
+          <feFuncR type="gamma" amplitude="1" exponent="1" offset="0" id="feFuncR"/>
+          <feFuncG type="gamma" amplitude="1" exponent="1" offset="0" id="feFuncG"/>
+          <feFuncB type="gamma" amplitude="1" exponent="1" offset="0" id="feFuncB"/>
+        </feComponentTransfer>
+      </filter>
+    </svg>
+
+
+
+
     <meta name="theme-color" content="#2a60aa">
     <link rel="stylesheet" href="style.css">
     <style id="root">
