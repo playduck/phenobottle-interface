@@ -63,6 +63,11 @@ module.exports = (io, authenticateToken, database) => {
         });
     });
 
+    socket.on("usernameRequest", () => {
+      const username = socket?.user?.username;
+      socket.emit("username", username);
+    })
+
     socket.on("imageRequest", (device_id) => {
         database.getLatestImage(device_id, (err, rows, fields) => {
             if(err) {failureMessage(err);}

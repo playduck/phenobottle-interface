@@ -17,7 +17,6 @@ const camera = document.getElementById('camera');
 const cameraContainer = document.getElementById('camera-container');
 
 let materModeEnabled = false;
-const materModeStatus = document.getElementById('mater-mode-status');
 const materModeButton = document.getElementById('mater-mode-button');
 
 const connectionElement = document.getElementById('connection');
@@ -406,12 +405,10 @@ materModeButton.onclick =
 
       if (materModeEnabled === true) {
         materModeButton.innerText = 'Disable Mater Mode';
-        // materModeStatus.innerText = 'Armed';
         document.body.classList.add('armed');
         playSound(1000);
       } else {
         materModeButton.innerText = 'Enable Mater Mode';
-        // materModeStatus.innerText = 'Disabled';
         document.body.classList.remove('armed');
       }
     }
@@ -421,6 +418,7 @@ const socket = io();
 const connectMessage = () => {
   setTimeout(() => {
     socket.emit('deviceListRequest');
+    socket.emit("usernameRequest");
     socket.emit('imageRequest', device_id);
     socket.emit('measurementRequest', device_id, 'temperature', 100);
     socket.emit('measurementRequest', device_id, 'CO2', 100);
@@ -446,6 +444,11 @@ socket.on('deviceList', (devices) => {
   }
 });
 
+const usernameElement = document.getElementById("username");
+socket.on("username", (username) => {
+  usernameElement.innerText = username;
+})
+
 socket.on('imageUpdate', (data) => {
   const buffer = new Uint8Array(data.buffer);
   const blob = new Blob([buffer], {type: 'image/avif'});
@@ -454,7 +457,7 @@ socket.on('imageUpdate', (data) => {
   cameraContainer.style.setProperty('--url', `url(${url})`);
 
   const timestampDiv = document.getElementById('camera-timestamp');
-  timestampDiv.innerText = new Date(data.timestamp).toISOString();
+  timestampDiv.innerText = new Date(data.timestamp).toLocaleString();
 });
 
 socket.on('measurementTemperature', (rows) => {
@@ -480,7 +483,7 @@ socket.on('heartbeatRequest', (serverTimestamp) => {
   const startTime = Date.now();
   socket.emit('heartbeat');
 
-  hostTimeElement.innerText = (new Date(serverTimestamp)).toJSON();
+  hostTimeElement.innerText = (new Date(serverTimestamp)).toLocaleTimeString();
 
   socket.once('heartbeatResponse', () => {
     const endTime = Date.now();
