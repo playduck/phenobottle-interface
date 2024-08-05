@@ -354,6 +354,7 @@ sign.onclick = () => {
 
 let source = undefined;
 let audioContext = undefined;
+let started = false;
 
 const xhr = new XMLHttpRequest();
 xhr.open('GET', 'assets/mater.mp3', true);
@@ -381,6 +382,11 @@ let playbackStart = 0;
 let timeoutId = null;
 
 function playSound(duration_ms) {
+  if(started == false) {
+    started = true;
+    source.start();
+  }
+
   if (!isPlaying) {
     audioContext.resume();
     isPlaying = true;

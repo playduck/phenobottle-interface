@@ -3,6 +3,7 @@
 const PORT = 8080;
 
 const express = require('express');
+var cors = require('cors')
 const basicAuth = require('express-basic-auth');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
@@ -55,15 +56,22 @@ function getUnauthorizedResponse(req) {
       'No credentials provided'
 }
 
-app.use(express.json())
-app.use(cookieParser('secret'));
-
-const authenticateToken = (token, callback) => {
-  jwt.verify(token, authSecretKey, callback);
+var corsOptions = {
+  optionsSuccessStatus:
+      200  // some legacy browsers (IE11, various SmartTVs) choke on 204
 }
 
+                  app.use(cors(corsOptions));
+app.use(express.json());
+app.use(cookieParser('secret'));
+
+const authenticateToken =
+    (token, callback) => {
+      jwt.verify(token, authSecretKey, callback);
+    }
+
 const authenticate = (req, res, next) => {
-  const token = req.cookies["x-auth-token"];
+  const token = req.cookies['x-auth-token'];
 
   if (token) {
     authenticateToken(token, (err, user) => {
@@ -74,8 +82,7 @@ const authenticate = (req, res, next) => {
       }
       next();
     });
-  }
-  else {
+  } else {
     req.user = null;
     next();
   }
@@ -100,32 +107,34 @@ app.use('/', (req, res, next) => {
 });
 
 const users = [
-  {username: "***REMOVED***", plainPassword: "***REMOVED***", hashedPassword: ""},
-  {username: "***REMOVED***", plainPassword: "***REMOVED***", hashedPassword: ""},
-  {username: "***REMOVED***", plainPassword: "***REMOVED***", hashedPassword: ""},
+  {username: '***REMOVED***', plainPassword: '***REMOVED***', hashedPassword: ''},
+  {username: '***REMOVED***', plainPassword: '***REMOVED***', hashedPassword: ''},
+  {username: '***REMOVED***', plainPassword: '***REMOVED***', hashedPassword: ''},
 ];
 
-for(const user in users)  {
-  users[user].hashedPassword = bcrypt.hashSync(users[user].plainPassword, saltRounds);
+for (const user in users) {
+  users[user].hashedPassword =
+      bcrypt.hashSync(users[user].plainPassword, saltRounds);
 }
 
 // Login route
 app.post('/api/v1/login', async (req, res) => {
   const {username, password} = req.body;
 
-  for(const user in users)  {
+  for (const user in users) {
     if (username === users[user].username) {
-      if((await bcrypt.compare(password, users[user].hashedPassword)) === true) {
-          const token = jwt.sign({username}, authSecretKey, {expiresIn: '6h'});
+      if ((await bcrypt.compare(password, users[user].hashedPassword)) ===
+          true) {
+        const token = jwt.sign({username}, authSecretKey, {expiresIn: '6h'});
 
-          res.cookie('x-auth-token', token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-          });
+        res.cookie('x-auth-token', token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+        });
 
-          res.status(200).send({message: '/'});
-          return;
-        }
+        res.status(200).send({message: '/'});
+        return;
+      }
     }
   }
   // deter side-channel attacks
@@ -134,8 +143,10 @@ app.post('/api/v1/login', async (req, res) => {
 });
 
 app.post('/api/v1/logout', (req, res) => {
-  res.cookie('x-auth-token', '', { expires: new Date(Date.now() - 1000) }); // Set the cookie to expire immediately
-  res.status(200).send({ message: '/' });
+  res.cookie('x-auth-token', '', {
+    expires: new Date(Date.now() - 1000)
+  });  // Set the cookie to expire immediately
+  res.status(200).send({message: '/'});
 });
 
 // POST endpoint for temperature, CO2, and OD measurements
@@ -222,8 +233,8 @@ app.post('/api/v1/image', basic, upload.single('image'), async (req, res) => {
 socket(io, authenticateToken, database);
 
 app.get('/api/v1/image/:id', (req, res) => {
-  if(!req.user)  {
-    return res.status(401).redirect("/?failed=unauthorized");
+  if (!req.user) {
+    return res.status(401).redirect('/?failed=unauthorized');
   }
 
   const deviceId = req.params.id;
@@ -241,8 +252,8 @@ app.get('/api/v1/image/:id', (req, res) => {
 });
 
 app.get('/api/v1/export', async (req, res) => {
-  if(!req.user)  {
-    return res.status(401).redirect("/?failed=unauthorized");
+  if (!req.user) {
+    return res.status(401).redirect('/?failed=unauthorized');
   }
 
   const data = await database.getAllData();
@@ -257,8 +268,8 @@ app.get('/api/v1/export', async (req, res) => {
   res.send(excelBuffer);
 });
 
-app.get("*", (req, res) => {
-  return res.status(404).redirect("/?failed=unauthorized");
+app.get('*', (req, res) => {
+  return res.status(404).redirect('/?failed=unauthorized');
 })
 
 // FIXME
