@@ -55,6 +55,11 @@ module.exports = (io, authenticateToken, database) => {
       clearInterval(heartbeatInterval);
     });
 
+    socket.on("usernameRequest", () => {
+      const username = socket?.user?.username;
+      socket.emit("username", username);
+    })
+
     socket.on("deviceListRequest", () => {
         database.getDevices((err, rows, fields) => {
             if(err) {failureMessage(err);}
@@ -62,11 +67,6 @@ module.exports = (io, authenticateToken, database) => {
             socket.emit('deviceList', rows);
         });
     });
-
-    socket.on("usernameRequest", () => {
-      const username = socket?.user?.username;
-      socket.emit("username", username);
-    })
 
     socket.on("imageRequest", (device_id) => {
         database.getLatestImage(device_id, (err, rows, fields) => {
@@ -87,6 +87,14 @@ module.exports = (io, authenticateToken, database) => {
         if(err) {failureMessage(err);}
 
         socket.emit(`measurement${capitalizeFirstLetter(type)}`, rows);
+      });
+    });
+
+    socket.on("taskRequest", (device_id) => {
+      database.getDeviceTasks(device_id, (err, rows, fields) => {
+        if(err) {failureMessage(err);}
+
+        socket.emit("tasks", rows);
       });
     });
 

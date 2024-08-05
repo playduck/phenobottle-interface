@@ -150,8 +150,11 @@ app.post('/api/v1/logout', (req, res) => {
 });
 
 // POST endpoint for temperature, CO2, and OD measurements
-app.post('/api/v1/measurements', basic, (req, res) => {
-  const {device_id, timestamp, measurement_type, value} = req.body;
+app.post('/api/v1/measurement', basic, (req, res) => {
+  const device_id = req.header('Device-Id');
+  const timestamp = req.header('Timestamp');
+
+  const {measurement_type, value} = req.body;
   database.insertMeasurement(
       device_id, timestamp, measurement_type, value, (err, results) => {
         if (err) {
@@ -286,6 +289,7 @@ setInterval(() => {
             value: (Math.sin(Date.now() / 2000) * 0.5 + 0.5) * 1000
           }]);
 }, 1000);
-
+// database.insertTask(1, "Illumination Task", "illumination", "2024-08-01 08:00:00", "2024-08-01 20:00:00", "24:00:00", console.log);
+// database.insertTask(1, "Mixing Event", "mixing", "2024-08-05 015:00:00", "2024-08-05 15:30:00", null, console.log);
 
 server.listen(PORT, () => console.log(`server listening on port: ${PORT}`));

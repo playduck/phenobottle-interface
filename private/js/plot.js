@@ -26,35 +26,40 @@ const tempData = new vis.DataSet({type: {start: 'ISODate', end: 'ISODate'}});
 const gasData = new vis.DataSet({type: {start: 'ISODate', end: 'ISODate'}});
 const odData = new vis.DataSet({type: {start: 'ISODate', end: 'ISODate'}});
 
+const startSettingElement = document.getElementById("start-setting");
+const endSettingElement = document.getElementById("end-setting");
+const periodSettingElement = document.getElementById("period-setting");
+const parameterSettingElement = document.getElementById("parameter-setting");
 
 const device_id = 1;  // FIXME
 
 
 const groups = new vis.DataSet([
   {id: 'divider', content: ''},
-  {id: 'Illumination', className: 'Illumination', content: 'Illumination'},
-  {id: 'Temperature', className: 'Temperature', content: 'Temperature'},
-  {id: 'Mixing', className: 'Mixing', content: 'Mixing'},
-  {id: 'Pump', className: 'Pump', content: 'Pump'}
+  {id: 'illumination', className: 'Illumination', content: 'Illumination'},
+  {id: 'temperature', className: 'Temperature', content: 'Temperature'},
+  {id: 'mixing', className: 'Mixing', content: 'Mixing'},
+  {id: 'pump', className: 'Pump', content: 'Pump'}
 ]);
 
-const items = new vis.DataSet({type: {start: 'ISODate', end: 'ISODate'}});
+const taskItems = new vis.DataSet({type: {start: 'ISODate', end: 'ISODate'}});
 const zeroPad = (num, places) => String(num).padStart(places, '0')
-for (let year = 0; year < 1; year++) {
-  for (let month = 0; month < 12; month++) {
-    for (let day = 1; day <= 31; day++) {
-      items.add([
-        {
-          id: year * 12 * 31 + month * 31 + (day - 1),
-          content: 'Illumination',
-          group: 'Illumination',
-          start: new Date(2024 + year, month, day, 8, 0, 0, 0),
-          end: new Date(2024 + year, month, day, 20, 0, 0, 0),
-        },
-      ]);
-    }
-  }
-}
+
+// for (let year = 0; year < 1; year++) {
+//   for (let month = 0; month < 12; month++) {
+//     for (let day = 1; day <= 31; day++) {
+//       items.add([
+//         {
+//           id: year * 12 * 31 + month * 31 + (day - 1),
+//           content: 'Illumination',
+//           group: 'Illumination',
+//           start: new Date(2024 + year, month, day, 8, 0, 0, 0),
+//           end: new Date(2024 + year, month, day, 20, 0, 0, 0),
+//         },
+//       ]);
+//     }
+//   }
+// }
 
 const hourMargin = 4;
 const commonOptions = {
@@ -111,6 +116,7 @@ const timelineOptions = {
   groupHeightMode: 'fixed',
   orientation: 'bottom',
   rollingMode: {follow: false, offset: 0.85},
+
   onMoving: (item, callback) => {
     // let day_increment = 0;
     // if ((item.start.getDate() < item.end.getDate() ||
@@ -154,7 +160,7 @@ const tempplot = new vis.Graph2d(tempContainer, tempData, tempOptions);
 const gasplot = new vis.Graph2d(gasContainer, gasData, gasOptions);
 const odplot = new vis.Graph2d(odContainer, odData, odOptions);
 const timeline =
-    new vis.Timeline(timelineContainer, items, groups, timelineOptions);
+    new vis.Timeline(timelineContainer, taskItems, groups, timelineOptions);
 
 tempplot.on('rangechange', () => {
   const {start, end} = {...tempplot.getWindow()};
@@ -182,6 +188,34 @@ timeline.on('rangechange', () => {
   gasplot.setWindow(start, end, {animation: false});
   odplot.setWindow(start, end, {animation: false});
   tempplot.setWindow(start, end, {animation: false});
+});
+
+timeline.on('select', function (properties) {
+  if(properties.items.length != 1)  {
+    startSettingElement.disabled = true;
+    endSettingElement.disabled = true;
+    periodSettingElement.disabled = true ;
+    parameterSettingElement.disabled = true ;
+    return;
+  }
+
+  startSettingElement.disabled = false;
+  endSettingElement.disabled = false;
+  periodSettingElement.disabled = false;
+  parameterSettingElement.disabled = false;
+
+  const item = taskItems.get(properties.items[0])
+
+  startSettingElement.value = `${zeroPad(item.start.getHours(), 2)}:${zeroPad(item.start.getMinutes(),2)}`;
+  endSettingElement.value =   `${zeroPad(item.end.getHours(), 2)}:${zeroPad(item.end.getMinutes(),2)}`;
+
+  if(item.period != null) {
+    periodSettingElement.value = item.period.substr(0,5);
+    console.log(item.period.substr(0,5))
+  } else  {
+    periodSettingElement.value = "00:00";
+  }
+
 });
 
 zoomDay.onclick = () => {
@@ -426,6 +460,7 @@ const connectMessage = () => {
     socket.emit('deviceListRequest');
     socket.emit("usernameRequest");
     socket.emit('imageRequest', device_id);
+    socket.emit('taskRequest', device_id);
     socket.emit('measurementRequest', device_id, 'temperature', 100);
     socket.emit('measurementRequest', device_id, 'CO2', 100);
     socket.emit('measurementRequest', device_id, 'OD', 100);
@@ -466,6 +501,57 @@ socket.on('imageUpdate', (data) => {
   timestampDiv.innerText = new Date(data.timestamp).toLocaleString();
 });
 
+const recurring_end_date = new Date(new Date().getFullYear() + 1, 0, 1);
+console.log("rec end", recurring_end_date);
+
+socket.on("tasks", (data) => {
+  console.log("tasks", data);
+
+  for(const task_idx in data) {
+    const task = data[task_idx];
+    console.log(task)
+
+    let start = new Date(task.task_start);
+    let end = new Date(task.task_end);
+
+    let period = new Date(0);
+    if(task.task_period != null)  {
+      const [hours, minutes, seconds] = task.task_period.split(":");
+      period = new Date(0);
+      period.setHours(parseInt(hours));
+      period.setMinutes(parseInt(minutes));
+      period.setSeconds(parseInt(seconds));
+    }
+
+    let iteration = 0;
+    let id = "";
+
+    function addPeriod(date) {
+      return new Date(date.getTime() + period.getTime());
+    }
+
+    do {
+      id = `${task.task_id}:${iteration}`;
+
+      taskItems.add([
+        {
+          id: id,
+          content: task.task_name,
+          group: task.task_type,
+          start: start,
+          end: end,
+          period: task.task_period
+        },
+      ]);
+
+      iteration += 1;
+      start = addPeriod(start);
+      end = addPeriod(end);
+
+    } while(task.task_period && (end.getTime() < recurring_end_date.getTime()));
+
+  }
+});
 socket.on('measurementTemperature', (rows) => {
   for (const row in rows) {
     addTempData(rows[row].timestamp, rows[row].value);

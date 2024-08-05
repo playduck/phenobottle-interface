@@ -57,6 +57,10 @@ function insertImage(device_id, timestamp, image_mime, image_data, callback) {
           image_data}')`;
   db.query(query, [device_id, timestamp, image_mime], callback);
 }
+function insertTask(device_id, task_name, task_type, task_start, task_end, task_period, callback) {
+  const query = `INSERT INTO Tasks (device_id, task_name, task_type, task_start, task_end, task_period) VALUES (?, ?, ?, ?, ?, ?)`;
+db.query(query, [device_id, task_name, task_type, task_start, task_end, task_period], callback);
+}
 
 function getDevices(callback) {
   const deviceQuery = 'SELECT * FROM Devices';
@@ -130,6 +134,7 @@ module.exports = {
   disconnect,
   insertMeasurement,
   insertImage,
+  insertTask,
   getDevices,
   getDeviceTasks,
   getLatestImage,

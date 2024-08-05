@@ -29,10 +29,10 @@ CREATE TABLE IF NOT EXISTS Tasks (
     task_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     device_id SMALLINT UNSIGNED NOT NULL,
     task_name VARCHAR(50) NULL,
-    task_type ENUM('temperature', 'CO2', 'OD') NOT NULL,
+    task_type ENUM('illumination', 'temperature', 'mixing', 'pump') NOT NULL,
     task_start DATETIME NOT NULL,
     task_end DATETIME NOT NULL,
-    recurring BOOLEAN NOT NULL,
+    task_period TIME,
     INDEX idx_device_id (device_id),
     INDEX idx_timestamp (task_start),
     CONSTRAINT fk_device_id_task FOREIGN KEY (device_id) REFERENCES Devices (device_id)

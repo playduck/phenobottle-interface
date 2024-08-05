@@ -647,9 +647,24 @@ input {
     margin: 0;
     width: 3em;
 }
-.unit-input input[type=time]    {
+.unit-input input[type=number],
+.unit-input input[type=time],
+.unit-input input[type=duration]    {
     width: auto!important;
     max-width: 4em;
+}
+
+.unit-input input:disabled,
+.unit-input input:disabled:hover {
+    cursor: not-allowed;
+    border-color: var(--light-gray)!important;
+}
+
+.unit-input input:disabled,
+input[disabled]::-webkit-datetime-edit-hour-field,
+input[disabled]::-webkit-datetime-edit-minute-field,
+input[disabled]::-webkit-datetime-edit-text {
+    color: var(--light-gray)!important;
 }
 
 .unit-input input:hover,
