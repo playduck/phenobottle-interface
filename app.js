@@ -137,8 +137,8 @@ app.post('/api/v1/login', async (req, res) => {
       }
     }
   }
-  // deter side-channel attacks
-  await new Promise(resolve => setTimeout(resolve, Math.random() * 1000));
+  // deter side-channel attacks, by delaying for a random amount of time
+  await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 2500));
   res.status(401).send({message: 'failure'});
 });
 
