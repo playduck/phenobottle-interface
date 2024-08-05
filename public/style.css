@@ -174,10 +174,57 @@ main {
 }
 
 #login {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     padding: 0.5em 2em;
     margin: 1em;
+    text-align: right;
+    line-height: 1em;
 }
 
 .waiting {
     cursor: wait!important;
+}
+
+.waiting button,
+.waiting button:hover,
+.waiting button:active {
+    pointer-events: none;
+    border-color: var(--light-gray);
+}
+
+
+.lds-dual-ring,
+.lds-dual-ring:after {
+  box-sizing: border-box;
+}
+.lds-dual-ring {
+  width: 1em;
+  height: 1em;
+  margin-right: 1ex;
+  margin-left: -1.5em;
+  opacity: 0;
+  will-change: margin-left opacity;
+  transition: 200ms;
+}
+.waiting .lds-dual-ring{
+    margin-left: 0;
+    opacity: 1;
+}
+.lds-dual-ring:after {
+  content: " ";
+  display: block;
+  border-radius: 50%;
+  border: 6.4px solid var(--very-dark-gray);
+  border-color: var(--dark-gray) transparent var(--dark-gray) transparent;
+  animation: lds-dual-ring 1.2s linear infinite;
+}
+@keyframes lds-dual-ring {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
