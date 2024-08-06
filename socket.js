@@ -23,7 +23,6 @@ module.exports = (io, authenticateToken, database) => {
 
   io.use(authenticate).on('connection', (socket) => {
     console.log('a user connected');
-    let queueTokenCheck = false;
 
     function failureMessage(err) {
       socket.emit("failure", err);
@@ -34,20 +33,14 @@ module.exports = (io, authenticateToken, database) => {
     }
 
     socket.use((_, next) =>  {
-
-      if(queueTokenCheck) {
-        authenticate(socket, (err) => {
-          if(err) {
-            socket.disconnect();
-            next(err);
-          } else  {
-            queueTokenCheck = false;
-            next();
-          }
-        });
-      } else  {
-        next();
-      }
+      authenticate(socket, (err) => {
+        if(err) {
+          socket.disconnect();
+          next(err);
+        } else  {
+          next();
+        }
+      });
     });
 
     socket.on("disconnect", () => {
@@ -98,18 +91,26 @@ module.exports = (io, authenticateToken, database) => {
       });
     });
 
+    let heartbeatTimeout = 0;
+
     // Handle heartbeat
     socket.on('heartbeat', () => {
       socket.emit('heartbeatResponse');
+      heartbeatTimeout -= 1;
     });
 
     socket.on('heartbeatResponse', () => {
+      heartbeatTimeout -= 1;
     });
 
     // Send heartbeat request to client every second
     heartbeatInterval = setInterval(() => {
-        queueTokenCheck = true;
         socket.emit('heartbeatRequest', Date.now());
+
+        heartbeatTimeout += 2;
+        if(heartbeatTimeout > 6)  {
+          socket.disconnect();
+        }
     }, 2500);
   });
 };
