@@ -77,13 +77,13 @@ function attemptLogin() {
 const feFuncR = document.getElementById('feFuncR');
 const feFuncG = document.getElementById('feFuncG');
 const feFuncB = document.getElementById('feFuncB');
-const startValue = 10;
-const endValue = 1;
-const duration = 500;
+const startValue = 9;
+const endValue = 1.1;
+const duration = 1500;
 let startTime = null;
 
 function ease(t) {
-  return t < 0.5 ? 4 * t * t * t : 1 - 4 * (1 - t) * (1 - t) * (1 - t);
+  return t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
 }
 
 function animate(timestamp) {

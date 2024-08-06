@@ -228,7 +228,7 @@ footer {
 }
 
 .border  {
-    border-radius: 1rem;
+    border-radius: calc(2 * var(--border-radius));
     border: 1px solid var(--light-gray);
     will-change: border-color;
     transition:  10ms;

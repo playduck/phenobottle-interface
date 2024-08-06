@@ -51,7 +51,7 @@ body::before {
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
-    animation: 1000ms ease-out 0s 1 fadeIn;
+    animation: 400ms ease-out 0s 1 fadeIn;
     filter: url(#f1);
     -webkit-filter: url(#f1);
 }

@@ -518,7 +518,7 @@ socket.on("tasks", (data) => {
     if(task.task_period != null)  {
       const [hours, minutes, seconds] = task.task_period.split(":");
       period = new Date(0);
-      period.setHours(parseInt(hours));
+      period.setHours(parseInt(hours) + 1);
       period.setMinutes(parseInt(minutes));
       period.setSeconds(parseInt(seconds));
     }
