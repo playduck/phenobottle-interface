@@ -181,6 +181,9 @@ button:active {
 
 footer {
     background-color: var(--background);
+    z-index: 999999;
+    position: sticky;
+    bottom: 0;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -224,6 +227,8 @@ footer {
     gap: 10px;
     height: 100%;
 }
+
+.plot {}
 
 #timeplot {
     position: relative;
@@ -514,8 +519,11 @@ footer {
 #settings   {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    padding: 1em 0.5em 0.5em 10em;
-
+    gap: 2ex;
+    padding: 1ex 0 0 0;
+}
+#section-settings {
+    margin-top: auto;
 }
 #context-settings,
 #settings-actions   {
@@ -533,13 +541,13 @@ footer {
 }
 
 .data-table {
-    height: 150px;
     width: 100%;
+    height: calc(100% - 2em);
     border-spacing: 0;
     text-align: left;
     border-collapse: collapse;
-    display: block;
-    overflow-y: scroll;
+    display: table;
+    overflow: hidden;
     position: relative;
     scroll-snap-type: y mandatory;
 }
@@ -557,6 +565,7 @@ footer {
 }
 .data-table th:nth-child(2)    {
     float: right;
+    text-align: right;
 }
 
 .data-table thead {
@@ -582,6 +591,11 @@ footer {
     background-color: var(--very-light-gray);
 }
 
+.data-table-body tr:first-child {
+    position: sticky;
+    top: 0;
+    box-shadow: 0 0 16px black;
+}
 #temp-table .data-table-body tr:first-child {
     background-color: color-mix(in srgb, var(--warr-blue-3), var(--very-light-gray) 60%);
 }
@@ -607,7 +621,11 @@ footer {
 
 .data-table-body {
     width: 100%;
-    display: block;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow-y: scroll;
+    position: relative;
 }
 
 #parameter {
@@ -721,7 +739,7 @@ input[disabled]::-webkit-datetime-edit-text {
 
 #snackbar {
     cursor: pointer;
-    position: absolute;
+    position: fixed;
     bottom: -21em;
     z-index: 99999;
     box-shadow: 0px 0px 50px black;
@@ -746,7 +764,7 @@ input[disabled]::-webkit-datetime-edit-text {
     margin: 1ex 0;
 }
 #snackbar.show {
-    bottom: 50px;
+    bottom: 7em;
 }
 #snackbar.fail {
     background-color: color-mix(in oklab, var(--warr-red), transparent 50%);
@@ -824,4 +842,5 @@ input[disabled]::-webkit-datetime-edit-text {
     .fullscreen #camera-container {
         width: 100vw;
     }
+
 }

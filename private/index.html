@@ -112,10 +112,12 @@
     </header>
 
     <div id="main-grid">
+
       <div class="column">
         <section class="container border" id="timeplot">
           <h2>Timeline</h2>
           <div id="view-controls">
+            <button id="zoom-week">Week</button>
             <button id="zoom-day">Day</button>
             <button id="zoom-hour">Hour</button>
             <button id="zoom-minute">Minute</button>
@@ -127,7 +129,9 @@
             <div class="plot" id="od-plot"></div>
             <div id="timeline"></div>
           </div>
-          <section>
+        </section>
+
+          <section id="section-settings" class="container border">
             <h2>Selection Settings</h2>
             <div id="settings">
               <div id="context-settings">
@@ -160,7 +164,6 @@
               </div>
             </div>
           </section>
-        </section>
       </div>
 
       <div class="column">
@@ -220,8 +223,6 @@
                 <div class="unit-input" unit="ppm"><input type="number" name="co2-low-alert"
                     id="co2-low-alert" value="200"></div>
               </div>
-              <!-- <label for="event-update-rate">Event Loop</label>
-                  <div class="unit-input" unit="ms"><input type="number" name="event-update-rate" id="event-update-rate"></div> -->
             </div>
           </div>
           <div class="container border">
@@ -251,7 +252,6 @@
                 </tr>
               </thead>
               <tbody class="data-table-body" id="temp-table-body">
-                <!-- dynamically added rows will go here -->
               </tbody>
             </table>
             <table class="data-table" id="gas-table">
@@ -262,7 +262,6 @@
                 </tr>
               </thead>
               <tbody class="data-table-body" id="gas-table-body">
-                <!-- dynamically added rows will go here -->
               </tbody>
             </table>
             <table class="data-table" id="od-table">
@@ -273,18 +272,14 @@
                 </tr>
               </thead>
               <tbody class="data-table-body" id="od-table-body">
-                <!-- dynamically added rows will go here -->
               </tbody>
             </table>
           </div>
         </section>
       </div>
+
     </div>
-    <div id="snackbar" class="">
-      <h2 id="snack-title">Title</h2>
-      <div id="snack-divider"></div>
-      <p id="snack-body">Message.</p>
-    </div>
+
     <footer>
       <span>
         2024 WARR ***REMOVED***
@@ -306,6 +301,12 @@
             class="e"
             d="m129.4155,75.3249c0-5.9372.0473-11.3758-.0237-16.8128-.0277-2.1197,1.1139-2.9919,2.9539-3.2314,1.3061-.17,2.6389-.2693,3.953-.22,6.641.2494,9.2926,5.1699,5.9759,11.0205-2.2236,3.9225-7.6208,7.8902-12.8591,9.2436Z" /></g></svg>
     </footer>
+
+    <div id="snackbar" class="">
+      <h2 id="snack-title">Title</h2>
+      <div id="snack-divider"></div>
+      <p id="snack-body">Message.</p>
+    </div>
   </body>
   <script src="js/plot.js" defer></script>
 </html>

@@ -3,6 +3,7 @@ const gasContainer = document.getElementById('gas-plot');
 const odContainer = document.getElementById('od-plot');
 const timelineContainer = document.getElementById('timeline');
 
+const zoomWeek = document.getElementById('zoom-week');
 const zoomDay = document.getElementById('zoom-day');
 const zoomHour = document.getElementById('zoom-hour');
 const zoomMinute = document.getElementById('zoom-minute');
@@ -339,6 +340,16 @@ function drawTasks(index)  {
 
 }
 
+zoomWeek.onclick = () => {
+  const start = vis.moment().startOf('week').subtract(hourMargin, 'days');
+  const end = vis.moment().endOf('week').add(hourMargin, 'days');
+
+  tempplot.setWindow(start, end, {animation: true});
+  gasplot.setWindow(start, end, {animation: true});
+  odplot.setWindow(start, end, {animation: true});
+  timeline.setWindow(start, end, {animation: true});
+};
+
 zoomDay.onclick = () => {
   const start = vis.moment().startOf('day').subtract(hourMargin, 'hours');
   const end = vis.moment().endOf('day').add(hourMargin, 'hours');
@@ -354,7 +365,7 @@ zoomHour.onclick = () => {
   const end = vis.moment().endOf('hour').add(hourMargin, 'minutes');
 
   tempplot.setWindow(start, end, {animation: true});
-  gasplot.setWindow(start, end, {animation: false});
+  gasplot.setWindow(start, end, {animation: true});
   odplot.setWindow(start, end, {animation: true});
   timeline.setWindow(start, end, {animation: true});
 };
@@ -364,7 +375,7 @@ zoomMinute.onclick = () => {
   const end = vis.moment().endOf('minute').add(hourMargin, 'seconds');
 
   tempplot.setWindow(start, end, {animation: true});
-  gasplot.setWindow(start, end, {animation: false});
+  gasplot.setWindow(start, end, {animation: true});
   odplot.setWindow(start, end, {animation: true});
   timeline.setWindow(start, end, {animation: true});
 };
@@ -701,7 +712,7 @@ socket.on('heartbeatRequest', (serverTimestamp) => {
 
 socket.on('disconnect', (reason) => {
   console.log('Disconnect', reason);
-  showSnackbar("success", "Disconnected from server", reason);
+  showSnackbar("fail", "Disconnected from server", reason);
 
   connectionElement.innerText = '';
   hostTimeElement.innerText = '-';
