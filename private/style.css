@@ -407,6 +407,23 @@ footer {
     stroke: color-mix(in srgb, var(--warr-yellow), var(--dark-gray) 10%)!important;
 }
 
+.Illumination .vis-item {
+    background-color: color-mix(in srgb, var(--warr-blue-1), var(--very-light-gray) 20%)!important;
+    border-color: color-mix(in srgb, var(--warr-blue-1), var(--very-light-gray) 60%)!important;
+}
+.Temperature .vis-item {
+    background-color: color-mix(in srgb, var(--warr-blue-2), var(--very-light-gray) 20%)!important;
+    border-color: color-mix(in srgb, var(--warr-blue-2), var(--very-light-gray) 60%)!important;
+}
+.Mixing .vis-item {
+    background-color: color-mix(in srgb, var(--warr-green), var(--very-light-gray) 20%)!important;
+    border-color: color-mix(in srgb, var(--warr-green), var(--very-light-gray) 60%)!important;
+}
+.Pump .vis-item {
+    background-color: color-mix(in srgb, var(--warr-blue-3), var(--very-light-gray) 20%)!important;
+    border-color: color-mix(in srgb, var(--warr-blue-3), var(--very-light-gray) 60%)!important;
+}
+
 .vis-item.expected {
     background-color: transparent;
     border-style: dashed!important;
@@ -425,8 +442,8 @@ footer {
 }
 
 .vis-foreground .vis-item {
-    background-color: var(--warr-blue-3);
-    border-color: var(--warr-blue-1)!important;
+    /* background-color: var(--warr-blue-3);
+    border-color: var(--warr-blue-1)!important; */
 }
 
 .vis-rolling-mode-btn {
