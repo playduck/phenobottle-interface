@@ -36,6 +36,8 @@ const saveTimelineBtn = document.getElementById("save-timeline");
 const snackbar = document.getElementById("snackbar");
 const snackbarTitle = document.getElementById("snack-title");
 const snackbarBody = document.getElementById("snack-body");
+const snackbarTitleFooter = document.getElementById("snack-title-footer");
+const snackbarBodyFooter = document.getElementById("snack-body-footer");
 
 const device_id = 1;  // FIXME
 
@@ -736,6 +738,9 @@ function showSnackbar(type, title, body)  {
   hideSnackbar(() => {
     snackbarTitle.innerText = title;
     snackbarBody.innerText = body;
+    snackbarTitleFooter.innerText = title;
+    snackbarBodyFooter.innerText = body;
+
     snackbar.className = "show";
     if(type)  snackbar.classList.add(type);
     setTimeout(() => {

@@ -70,7 +70,7 @@ module.exports = (io, authenticateToken, database) => {
               const timestamp = rows[0].timestamp;
               socket.emit('imageUpdate', { buffer: Array.from(buffer), timestamp });
             } else  {
-              failureMessage(`no image for ${device_id}`);
+              failureMessage(`No image for device Id ${device_id}`);
             }
         });
     });

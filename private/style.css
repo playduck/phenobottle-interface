@@ -182,19 +182,29 @@ button:active {
 footer {
     background-color: var(--background);
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
     border-top: 1px solid var(--warr-blue-2);
     padding: 1ex 3em;
     margin-top: 10px;
+    color: color-mix(in srgb, var(--light-gray), var(--dark-gray) 50%);
 }
 
 #sign {
     cursor: help;
     aspect-ratio: 3/1;
     height: 4ex;
-    fill:var(--light-gray);
     transition: fill 200ms;
+    fill: var(--light-gray);
+}
+
+#snackbar-footer {
+}
+#snack-title-footer {
+    font-weight: 400;
+}
+#snack-body-footer {
+    margin-left: 1ex;
 }
 
 #sign:hover {
