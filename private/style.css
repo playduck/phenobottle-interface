@@ -709,6 +709,58 @@ input[disabled]::-webkit-datetime-edit-text {
     z-index: 99999;
 }
 
+#snackbar {
+    cursor: pointer;
+    position: absolute;
+    bottom: -21em;
+    z-index: 99999;
+    box-shadow: 0px 0px 50px black;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20em;
+    background-color: color-mix(in oklab, var(--warr-blue-1), transparent 90%);
+    border: 1px solid var(--dark-gray);
+    border-radius: calc(2*var(--border-radius));
+    padding: 1em;
+    text-align: center;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: background-color 700ms, border-color 200ms, bottom 700ms, transform 100ms;
+}
+#snackbar:hover {
+    transform: translateX(-50%) scale(105%);
+}
+#snack-divider  {
+    width: 100%;
+    border-bottom: 1px solid var(--very-dark-gray);
+    margin: 1ex 0;
+}
+#snackbar.show {
+    bottom: 50px;
+}
+#snackbar.fail {
+    background-color: color-mix(in oklab, var(--warr-red), transparent 50%);
+    border-color: var(--warr-red);
+    box-shadow: 0px 0px 100px var(--warr-red);
+    bottom: 50%;
+    animation: failBlink 300ms ease-in-out 0s infinite alternate;
+}
+
+@keyframes failBlink {
+    0% {
+        box-shadow: 0px 0px 100px var(--warr-red);
+        transform: translateX(-50%) scale(100%);
+    }
+    100% {
+        box-shadow: 0px 0px 60px var(--warr-red);
+        transform: translateX(-50%) scale(110%);
+    }
+}
+#snackbar.success {
+    background-color: color-mix(in oklab, var(--warr-green), transparent 90%);
+    border-color: var(--warr-green)!important;
+}
+
 @media only screen and (max-width: 600px) {
     body {
         overflow: scroll;

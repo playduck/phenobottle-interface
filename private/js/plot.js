@@ -31,6 +31,12 @@ const durationSettingElement = document.getElementById("duration-setting");
 const periodSettingElement = document.getElementById("period-setting");
 const parameterSettingElement = document.getElementById("parameter-setting");
 
+const saveTimelineBtn = document.getElementById("save-timeline");
+
+const snackbar = document.getElementById("snackbar");
+const snackbarTitle = document.getElementById("snack-title");
+const snackbarBody = document.getElementById("snack-body");
+
 const device_id = 1;  // FIXME
 
 
@@ -44,22 +50,6 @@ const groups = new vis.DataSet([
 
 const taskItems = new vis.DataSet({type: {start: 'ISODate', end: 'ISODate'}});
 const zeroPad = (num, places) => String(num).padStart(places, '0')
-
-// for (let year = 0; year < 1; year++) {
-//   for (let month = 0; month < 12; month++) {
-//     for (let day = 1; day <= 31; day++) {
-//       items.add([
-//         {
-//           id: year * 12 * 31 + month * 31 + (day - 1),
-//           content: 'Illumination',
-//           group: 'Illumination',
-//           start: new Date(2024 + year, month, day, 8, 0, 0, 0),
-//           end: new Date(2024 + year, month, day, 20, 0, 0, 0),
-//         },
-//       ]);
-//     }
-//   }
-// }
 
 const hourMargin = 4;
 const commonOptions = {
@@ -106,7 +96,7 @@ const timelineOptions = {
   ...commonOptions,
   editable: {
     add: false,           // add new items by double tapping
-    updateTime: false,    // drag items horizontally
+    updateTime: true,    // drag items horizontally
     updateGroup: false,  // drag items from one group to another
     remove: false,  // delete an item by tapping the delete button top right
     overrideItems: false  // allow these options to override item.editable
@@ -116,42 +106,71 @@ const timelineOptions = {
   groupHeightMode: 'fixed',
   orientation: 'bottom',
   rollingMode: {follow: false, offset: 0.85},
-
+  snap: snap,
   onMoving: (item, callback) => {
-    // let day_increment = 0;
-    // if ((item.start.getDate() < item.end.getDate() ||
-    //      item.end.getHours() == 0)) {
-    //   day_increment = 1;
-    // }
 
-    // const start = [
-    //   item.start.getHours(), item.start.getMinutes(), item.start.getSeconds()
-    // ];
-    // const end =
-    //     [item.end.getHours(), item.end.getMinutes(), item.end.getSeconds()];
+    const start = `${item.start.getHours()}:${item.start.getMinutes()}:${item.start.getSeconds()}`
+    const duration = dateDiffToString(item.start, item.end);
+    tasks[canonicalTaskIndex].task_start = updateTime(tasks[canonicalTaskIndex].task_start, start);
+    tasks[canonicalTaskIndex].task_duration = duration;
 
-    // newItems = [];
-    // console.log(items)
-    // for (const idx in items._data) {
-    //   if (items._data[idx] != item) {
-    //     const startDate = new Date(items._data[idx].start.getTime());
-    //     startDate.setHours(start[0], start[1], start[2]);
+    startSettingElement.value = `${zeroPad(item.start.getHours(), 2)}:${zeroPad(item.start.getMinutes(),2)}`;
+    const durations = duration.split(":");
+    durationSettingElement.value = `${zeroPad(durations[0], 2)}:${zeroPad(durations[1], 2)}`;
 
-    //     const endDate = new Date(startDate.getTime());
-    //     endDate.setDate(startDate.getDate() + day_increment);
-    //     endDate.setHours(end[0], end[1], end[2]);
+    drawTasks(canonicalTaskIndex);
 
-    //     items._data[idx].start = startDate;
-    //     items._data[idx].end = endDate;
-
-    //     newItems.push(items._data[idx]);
-    //   }
-    // }
-    // items.update(newItems)
     callback(item);
   }
-
 };
+
+function snap(date, scale, step) {
+  const minute = 60 * 1000; // 1 minute in milliseconds
+  const hour = 60 * minute; // 1 hour in milliseconds
+
+  let snapUnit;
+  switch (scale) {
+    case 'minute':
+      snapUnit = minute;
+      break;
+    case 'hour':
+      snapUnit = hour;
+      break;
+    case 'weekday':
+      snapUnit = hour;
+      break;
+    case 'day':
+      snapUnit = hour * 3;
+      break;
+    case 'month':
+      snapUnit = hour * 8;
+      break;
+    case 'year':
+      snapUnit = hour * 24;
+      break;
+    default:
+      snapUnit = hour;
+  }
+
+  const snappingInterval = snapUnit;
+  const remainder = date.getTime() % snappingInterval;
+  if (remainder < snappingInterval / 2) {
+    date = new Date(date.getTime() - remainder);
+  } else {
+    date = new Date(date.getTime() + (snappingInterval - remainder));
+  }
+  return date;
+}
+
+function dateDiffToString(date1, date2) {
+  const diff = date2.getTime() - date1.getTime();
+  const seconds = Math.abs(diff / 1000);
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secondsLeft = seconds % 60;
+
+  return `${zeroPad(hours, 2)}:${zeroPad(minutes, 2)}:${zeroPad(secondsLeft, 2)}`;
+}
 
 tempData.add({x: commonOptions.min, y: 18, group: 'Optimal'});
 tempData.add({x: commonOptions.max, y: 18, group: 'Optimal'});
@@ -208,8 +227,6 @@ timeline.on('select', function (properties) {
 
   const item = taskItems.get(properties.items[0]);
   canonicalTaskIndex = item.index;
-  // const canonicalId = item.canonicalId
-  // canonicalTask = taskItems.get(`${canonicalId}:0`);
 
   startSettingElement.value = `${zeroPad(item.start.getHours(), 2)}:${zeroPad(item.start.getMinutes(),2)}`;
   const duration = item.duration.split(":");
@@ -240,6 +257,10 @@ periodSettingElement.addEventListener("change", () => {
     tasks[canonicalTaskIndex].task_period = padHMS(periodSettingElement.value);
     drawTasks(canonicalTaskIndex);
   }
+});
+
+saveTimelineBtn.addEventListener("click", () => {
+  console.log(tasks);
 });
 
 function updateTime(originalTime, newHMS) {
@@ -391,6 +412,7 @@ function addTempData(timestamp, value) {
 
     if (value >= highLimit || value <= lowLimit) {
       playSound(5000);
+      showSnackbar("fail", `${value.toFixed(2)}°C!`, "Mater Mode triggered by temperature");
     }
   }
 }
@@ -429,6 +451,7 @@ function addGasData(timestamp, value) {
 
     if (value >= highLimit || value <= lowLimit) {
       playSound(5000);
+      showSnackbar("fail", `${value.toFixed(2)}ppm!`, "Mater Mode triggered by CO2");
     }
   }
 }
@@ -503,6 +526,8 @@ xhr.onload = function() {
       source.connect(gainNode);
       gainNode.connect(audioContext.destination);
       source.start();
+      audioContext.suspend();
+      isPlaying = false;
     });
   }
 };
@@ -518,7 +543,6 @@ function playSound(duration_ms) {
     started = true;
     source.start();
   }
-
   if (!isPlaying) {
     audioContext.resume();
     isPlaying = true;
@@ -544,6 +568,8 @@ materModeButton.onclick =
       if (materModeEnabled === true) {
         materModeButton.innerText = 'Disable Mater Mode';
         document.body.classList.add('armed');
+        showSnackbar("", "Mater Mode Armed", "");
+
         playSound(1000);
       } else {
         if(timeoutId !== null)  {
@@ -554,6 +580,8 @@ materModeButton.onclick =
         document.body.classList.remove('triggered');
         isPlaying = false;
         audioContext.suspend();
+
+        showSnackbar("", "Mater Mode Disabled", "");
       }
     }
 
@@ -569,12 +597,17 @@ const connectMessage = () => {
     socket.emit('measurementRequest', device_id, 'CO2', 100);
     socket.emit('measurementRequest', device_id, 'OD', 100);
   }, 200);
+  console.log(socket)
+
+  showSnackbar("success", "Connection Established", `Connected to ${socket._opts.hostname}:${socket._opts.port}${socket._opts.path}`);
 };
 
 socket.on('connect', connectMessage);
 socket.on('reconnect', connectMessage);
 
-socket.on('failure', console.error);
+socket.on('failure', (err) => {
+  showSnackbar("fail", "Received Failure", err);
+});
 
 const deviceListElement = document.getElementById('device-id');
 socket.on('deviceList', (devices) => {
@@ -618,7 +651,6 @@ socket.on("tasks", (data) => {
     drawTasks(task_idx);
   }
 });
-
 socket.on('measurementTemperature', (rows) => {
   for (const row in rows) {
     addTempData(rows[row].timestamp, rows[row].value);
@@ -666,7 +698,9 @@ socket.on('heartbeatRequest', (serverTimestamp) => {
 });
 
 socket.on('disconnect', (reason) => {
-  console.log('Disconnected from the server', reason);
+  console.log('Disconnect', reason);
+  showSnackbar("success", "Disconnected from server", reason);
+
   connectionElement.innerText = '';
   hostTimeElement.innerText = '-';
   document.body.classList.remove('online');
@@ -683,4 +717,38 @@ document.getElementById("logout").addEventListener("click", (e) => {
     location.href = data.message;
   })
   .catch(console.err);
+});
+
+function hideSnackbar(callback) {
+  const snackbarTransitionDurationMS = 200;
+
+  // if(snackbar.classList.contains("show")) {
+  //   snackbar.classList.remove("show");
+  //   setTimeout(() => {callback;}, snackbarTransitionDurationMS);
+  // } else  {
+    callback();
+  // }
+}
+
+let snackabrActivations = 0;
+function showSnackbar(type, title, body)  {
+  snackabrActivations += 1;
+  hideSnackbar(() => {
+    snackbarTitle.innerText = title;
+    snackbarBody.innerText = body;
+    snackbar.className = "show";
+    if(type)  snackbar.classList.add(type);
+    setTimeout(() => {
+      snackabrActivations -= 1;
+      if(snackabrActivations <= 0)  {
+        snackabrActivations = 0;
+        if(type) snackbar.classList.remove(type);
+        snackbar.classList.remove("show");
+      }
+    }, 4000);
+  });
+}
+
+snackbar.addEventListener("click", () => {
+  snackbar.classList.remove("show");
 });
