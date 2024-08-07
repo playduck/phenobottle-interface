@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS Tasks (
     task_name VARCHAR(50) NULL,
     task_type ENUM('illumination', 'temperature', 'mixing', 'pump') NOT NULL,
     task_start DATETIME NOT NULL,
-    task_end DATETIME NOT NULL,
+    task_duration TIME NOT NULL,
     task_period TIME,
     INDEX idx_device_id (device_id),
     INDEX idx_timestamp (task_start),

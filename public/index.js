@@ -12,7 +12,7 @@ function displayMessage(text, color) {
   errorMesage.style.opacity = 0;
 
   setTimeout(() => {
-    errorMesage.innerText = text;
+    errorMesage.innerHTML = text;
     errorMesage.style.color = color;
     errorMesage.style.opacity = 1;
   }, 250);
@@ -62,10 +62,9 @@ function attemptLogin() {
           displayMessage(
               'The Username or Password is incorrect. Please try again.',
               colors.ERROR);
-          username.value = '';
           password.value = '';
         } else {
-          displayMessage('Login success. Please Wait...', colors.SUCCESS);
+          displayMessage('Login success.<br>Please Wait...', colors.SUCCESS);
           setTimeout(() => {
             location.href = data.message;
           }, 500);
@@ -77,9 +76,9 @@ function attemptLogin() {
 const feFuncR = document.getElementById('feFuncR');
 const feFuncG = document.getElementById('feFuncG');
 const feFuncB = document.getElementById('feFuncB');
-const startValue = 9;
+const startValue = 8.0;
 const endValue = 1.1;
-const duration = 1500;
+const duration = 1700;
 let startTime = null;
 
 function ease(t) {

@@ -651,7 +651,7 @@ input {
 .unit-input input[type=time],
 .unit-input input[type=duration]    {
     width: auto!important;
-    max-width: 4em;
+    max-width: 3em;
 }
 
 .unit-input input:disabled,

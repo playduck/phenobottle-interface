@@ -27,7 +27,7 @@ const gasData = new vis.DataSet({type: {start: 'ISODate', end: 'ISODate'}});
 const odData = new vis.DataSet({type: {start: 'ISODate', end: 'ISODate'}});
 
 const startSettingElement = document.getElementById("start-setting");
-const endSettingElement = document.getElementById("end-setting");
+const durationSettingElement = document.getElementById("duration-setting");
 const periodSettingElement = document.getElementById("period-setting");
 const parameterSettingElement = document.getElementById("parameter-setting");
 
@@ -105,10 +105,10 @@ const odOptions = {
 const timelineOptions = {
   ...commonOptions,
   editable: {
-    add: true,           // add new items by double tapping
-    updateTime: true,    // drag items horizontally
+    add: false,           // add new items by double tapping
+    updateTime: false,    // drag items horizontally
     updateGroup: false,  // drag items from one group to another
-    remove: true,  // delete an item by tapping the delete button top right
+    remove: false,  // delete an item by tapping the delete button top right
     overrideItems: false  // allow these options to override item.editable
   },
   stack: false,
@@ -190,33 +190,131 @@ timeline.on('rangechange', () => {
   tempplot.setWindow(start, end, {animation: false});
 });
 
+let canonicalTaskIndex = null;
 timeline.on('select', function (properties) {
   if(properties.items.length != 1)  {
     startSettingElement.disabled = true;
-    endSettingElement.disabled = true;
+    durationSettingElement.disabled = true;
     periodSettingElement.disabled = true ;
     parameterSettingElement.disabled = true ;
+    canonicalTask = null;
     return;
   }
 
   startSettingElement.disabled = false;
-  endSettingElement.disabled = false;
+  durationSettingElement.disabled = false;
   periodSettingElement.disabled = false;
   parameterSettingElement.disabled = false;
 
-  const item = taskItems.get(properties.items[0])
+  const item = taskItems.get(properties.items[0]);
+  canonicalTaskIndex = item.index;
+  // const canonicalId = item.canonicalId
+  // canonicalTask = taskItems.get(`${canonicalId}:0`);
 
   startSettingElement.value = `${zeroPad(item.start.getHours(), 2)}:${zeroPad(item.start.getMinutes(),2)}`;
-  endSettingElement.value =   `${zeroPad(item.end.getHours(), 2)}:${zeroPad(item.end.getMinutes(),2)}`;
+  const duration = item.duration.split(":");
+  durationSettingElement.value = `${zeroPad(duration[0], 2)}:${zeroPad(duration[1], 2)}`;
 
   if(item.period != null) {
     periodSettingElement.value = item.period.substr(0,5);
-    console.log(item.period.substr(0,5))
   } else  {
     periodSettingElement.value = "00:00";
   }
-
 });
+
+startSettingElement.addEventListener("change", () => {
+  if(canonicalTaskIndex != null)  {
+    tasks[canonicalTaskIndex].task_start = updateTime(tasks[canonicalTaskIndex].task_start, startSettingElement.value);
+    drawTasks(canonicalTaskIndex);
+  }
+});
+durationSettingElement.addEventListener("change", () => {
+  if(canonicalTaskIndex != null)  {
+    tasks[canonicalTaskIndex].task_duration = padHMS(durationSettingElement.value);
+    drawTasks(canonicalTaskIndex);
+  }
+});
+periodSettingElement.addEventListener("change", () => {
+  console.log(tasks[canonicalTaskIndex].task_period)
+  if(canonicalTaskIndex != null)  {
+    tasks[canonicalTaskIndex].task_period = padHMS(periodSettingElement.value);
+    drawTasks(canonicalTaskIndex);
+  }
+});
+
+function updateTime(originalTime, newHMS) {
+  const [datePart, timePart] = originalTime.split('T');
+  const newHMSParts = newHMS.split(':');
+  const newHours = parseInt(newHMSParts[0]) % 24 || 0;
+  const newMinutes = parseInt(newHMSParts[1]) || 0;
+  const newSeconds = parseInt(newHMSParts[2]) || 0;
+  const updatedTimePart = `${zeroPad(newHours,2)}:${zeroPad(newMinutes,2)}:${zeroPad(newSeconds,2)}.000Z`;
+  return `${datePart}T${updatedTimePart}`;
+}
+
+function padHMS(newHMS) {
+  const newHMSParts = newHMS.split(':');
+  const newHours = parseInt(newHMSParts[0] ) || 0;
+  const newMinutes = parseInt(newHMSParts[1]) || 0;
+  const newSeconds = parseInt(newHMSParts[2]) || 0;
+  return`${zeroPad(newHours,2)}:${zeroPad(newMinutes,2)}:${zeroPad(newSeconds,2)}`;
+}
+
+function drawTasks(index)  {
+  const canonicalTask = tasks[index];
+
+  let duration = new Date(0);
+  const [hours, minutes, seconds] = canonicalTask.task_duration.split(":");
+  duration.setHours(parseInt(hours) + 1);
+  duration.setMinutes(parseInt(minutes));
+  duration.setSeconds(parseInt(seconds));
+
+  let start = new Date(canonicalTask.task_start);
+  let end = addDates(start, duration);
+
+  let period = new Date(0);
+  if(canonicalTask.task_period != null)  {
+    const [hours, minutes, seconds] = canonicalTask.task_period.split(":");
+    period = new Date(0);
+    period.setHours(parseInt(hours) + 1);
+    period.setMinutes(parseInt(minutes));
+    period.setSeconds(parseInt(seconds));
+  }
+
+  let iteration = 0;
+  let id = "";
+
+  function addDates(date1, date2) {
+    return new Date(date1.getTime() + date2.getTime());
+  }
+
+  do {
+    id = `${canonicalTask.task_id}:${iteration}`;
+
+    taskItems.update([
+      {
+        id: id,
+        canonicalId: canonicalTask.task_id,
+        index: index,
+        content: canonicalTask.task_name,
+        group: canonicalTask.task_type,
+        start: start,
+        end: end,
+        duration: canonicalTask.task_duration,
+        period: canonicalTask.task_period,
+      },
+    ]);
+
+    iteration += 1;
+    start = addDates(start, period);
+    end = addDates(start, duration);
+
+  } while(canonicalTask.task_period && (end.getTime() < recurring_end_date.getTime()));
+
+  const firstitem = taskItems.get(`${canonicalTask.task_id}:0`);
+  firstitem.generated = iteration-1;
+
+}
 
 zoomDay.onclick = () => {
   const start = vis.moment().startOf('day').subtract(hourMargin, 'hours');
@@ -448,8 +546,14 @@ materModeButton.onclick =
         document.body.classList.add('armed');
         playSound(1000);
       } else {
+        if(timeoutId !== null)  {
+          clearTimeout(timeoutId);
+        }
         materModeButton.innerText = 'Enable Mater Mode';
         document.body.classList.remove('armed');
+        document.body.classList.remove('triggered');
+        isPlaying = false;
+        audioContext.suspend();
       }
     }
 
@@ -501,57 +605,20 @@ socket.on('imageUpdate', (data) => {
   timestampDiv.innerText = new Date(data.timestamp).toLocaleString();
 });
 
-const recurring_end_date = new Date(new Date().getFullYear() + 1, 0, 1);
-console.log("rec end", recurring_end_date);
+const currentDate = new Date();
+const recurring_end_date = new Date(currentDate.getTime() + 30 * 24 * 60 * 60 * 1000);
 
+let tasks = [];
 socket.on("tasks", (data) => {
   console.log("tasks", data);
 
-  for(const task_idx in data) {
-    const task = data[task_idx];
-    console.log(task)
+  tasks = data;
 
-    let start = new Date(task.task_start);
-    let end = new Date(task.task_end);
-
-    let period = new Date(0);
-    if(task.task_period != null)  {
-      const [hours, minutes, seconds] = task.task_period.split(":");
-      period = new Date(0);
-      period.setHours(parseInt(hours) + 1);
-      period.setMinutes(parseInt(minutes));
-      period.setSeconds(parseInt(seconds));
-    }
-
-    let iteration = 0;
-    let id = "";
-
-    function addPeriod(date) {
-      return new Date(date.getTime() + period.getTime());
-    }
-
-    do {
-      id = `${task.task_id}:${iteration}`;
-
-      taskItems.add([
-        {
-          id: id,
-          content: task.task_name,
-          group: task.task_type,
-          start: start,
-          end: end,
-          period: task.task_period
-        },
-      ]);
-
-      iteration += 1;
-      start = addPeriod(start);
-      end = addPeriod(end);
-
-    } while(task.task_period && (end.getTime() < recurring_end_date.getTime()));
-
+  for(const task_idx in tasks) {
+    drawTasks(task_idx);
   }
 });
+
 socket.on('measurementTemperature', (rows) => {
   for (const row in rows) {
     addTempData(rows[row].timestamp, rows[row].value);
