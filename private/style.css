@@ -794,7 +794,7 @@ input[disabled]::-webkit-datetime-edit-text {
         overflow: scroll;
     }
     .container  {
-        /* padding: 0; */
+        padding: 1ex;
     }
     #main-grid {
         width: 99vw;
@@ -825,7 +825,6 @@ input[disabled]::-webkit-datetime-edit-text {
     #main-grid {
         display: flex;
         flex-direction: column;
-        /* padding: 0; */
     }
     #parameter {
         width: 100vw;
@@ -836,11 +835,11 @@ input[disabled]::-webkit-datetime-edit-text {
     #data-tables {
         gap: 0;
     }
-    .data-table {
-        width: 33vw;
-    }
     .fullscreen #camera-container {
         width: 100vw;
     }
-
+    .data-table {
+        height: 150px;
+        padding: 0;
+    }
 }
