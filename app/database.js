@@ -1,3 +1,5 @@
+/* jshint esversion:21 */
+
 const fs = require('fs');
 const path = require('path');
 const mysql = require('mysql');
@@ -48,6 +50,7 @@ function insertMeasurement(
 }
 
 function insertImage(device_id, timestamp, image_mime, image_data, callback) {
+  // insert image as hex string
   const query =
       `INSERT INTO Images (device_id, timestamp, image_mime, image_data) VALUES (?, ?, ?, X'${
           image_data}')`;

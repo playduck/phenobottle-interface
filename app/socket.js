@@ -1,9 +1,12 @@
+/* jshint esversion:21 */
+
 const cookie = require('cookie');
 
 module.exports = (io, authenticateToken, database) => {
   let heartbeatInterval;
   console.log("listening for new ws connections")
 
+  // socket auth func
   const authenticate = (socket, callback) => {
     if(socket.handshake?.headers?.cookie)  {
       token = cookie.parse(socket.handshake.headers.cookie)["x-auth-token"];
@@ -33,6 +36,7 @@ module.exports = (io, authenticateToken, database) => {
     }
 
     socket.use((_, next) =>  {
+      // authenticate socket header cookie
       authenticate(socket, (err) => {
         if(err) {
           socket.disconnect();
@@ -66,6 +70,7 @@ module.exports = (io, authenticateToken, database) => {
             if(err) {failureMessage(err);}
 
             if(rows.length > 0) {
+              // TODO add caching?
               const buffer = Buffer.from(rows[0].image_data);
               const timestamp = rows[0].timestamp;
               socket.emit('imageUpdate', { buffer: Array.from(buffer), timestamp });
@@ -96,18 +101,18 @@ module.exports = (io, authenticateToken, database) => {
     // Handle heartbeat
     socket.on('heartbeat', () => {
       socket.emit('heartbeatResponse');
-      heartbeatTimeout -= 1;
+      heartbeatTimeout -= 1; // sub 1 point (total 2-1)
     });
 
     socket.on('heartbeatResponse', () => {
-      heartbeatTimeout -= 1;
+      heartbeatTimeout -= 1; // sub 1 point (total 2-1-1, net gain = 0)
     });
 
     // Send heartbeat request to client every second
     heartbeatInterval = setInterval(() => {
         socket.emit('heartbeatRequest', Date.now());
 
-        heartbeatTimeout += 2;
+        heartbeatTimeout += 2; // add two pending points
         if(heartbeatTimeout > 6)  {
           socket.disconnect();
         }

@@ -1,3 +1,5 @@
+/* jshint esversion:21 */
+
 const fs = require('fs');
 const exceljs = require('exceljs');
 const sharp = require('sharp');
