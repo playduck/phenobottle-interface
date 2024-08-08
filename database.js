@@ -3,10 +3,10 @@ const path = require('path');
 const mysql = require('mysql');
 
 const db = mysql.createConnection({
-  host: '***REMOVED***',
-  user: 'k122486_pheno_***REMOVED***',
-  password: '***REMOVED***',
-  database: '***REMOVED***'
+  host: 'db.robin-prillwitz.de',
+  user: 'k122486_pheno_admin',
+  password: '!31PaperBack',
+  database: 'k122486_phenobottle'
 });
 
 function connect() {

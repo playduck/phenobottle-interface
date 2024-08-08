@@ -107,12 +107,12 @@ const basic = (basicAuth({
   challenge: true,
 }));
 
-app.use('/favicon.ico', express.static('public/assets/favicon.ico'));
+app.use('/favicon.ico', express.static('./www/public/assets/favicon.ico'));
 
 app.use(authenticate);
 
 app.use('/', (req, res, next) => {
-  const rootDir = req.user ? './private' : './public';
+  const rootDir = req.user ? './www/private' : './www/public';
   express.static(rootDir)(req, res, next);
 });
 
@@ -279,7 +279,7 @@ app.get('/api/v1/export', async (req, res) => {
 });
 
 app.get('*', (req, res) => {
-  return res.status(404).redirect('/?failed=unauthorized');
+  return res.status(401).redirect('/?failed=unauthorized');
 })
 
 // FIXME
