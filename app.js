@@ -2,8 +2,10 @@
 
 const PORT = 8080;
 
+const users = require('./users.json');
+
 const express = require('express');
-var cors = require('cors')
+const cors = require('cors')
 const basicAuth = require('express-basic-auth');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
@@ -51,6 +53,7 @@ process.on('SIGUSR2', exitHandler.bind(null, {exit: true}));
 process.on('uncaughtException', exitHandler.bind(null, {exit: true}));
 
 function getUnauthorizedResponse(req) {
+  console.log(req)
   return req.auth ?
       ('Credentials ' + req.auth.user + ':' + req.auth.password + ' rejected') :
       'No credentials provided'
@@ -88,11 +91,18 @@ const authenticate = (req, res, next) => {
   }
 };
 
+let basicAuthUsers = {};
+for (const user in users) {
+  users[user].hashedPassword =
+      bcrypt.hashSync(users[user].plainPassword, saltRounds);
+
+  if (users[user].level >= 1) {
+    basicAuthUsers[users[user].username] = users[user].plainPassword;
+  }
+}
 
 const basic = (basicAuth({
-  users: {
-    '***REMOVED***': '***REMOVED***',
-  },
+  users: basicAuthUsers,
   unauthorizedResponse: getUnauthorizedResponse,
   challenge: true,
 }));
@@ -106,23 +116,12 @@ app.use('/', (req, res, next) => {
   express.static(rootDir)(req, res, next);
 });
 
-const users = [
-  {username: '***REMOVED***', plainPassword: '***REMOVED***', hashedPassword: ''},
-  {username: '***REMOVED***', plainPassword: '***REMOVED***', hashedPassword: ''},
-  {username: '***REMOVED***', plainPassword: '***REMOVED***', hashedPassword: ''},
-];
-
-for (const user in users) {
-  users[user].hashedPassword =
-      bcrypt.hashSync(users[user].plainPassword, saltRounds);
-}
-
 // Login route
 app.post('/api/v1/login', async (req, res) => {
   const {username, password} = req.body;
 
   for (const user in users) {
-    if (username === users[user].username) {
+    if (basicAuth.safeCompare(username, users[user].username)) {
       if ((await bcrypt.compare(password, users[user].hashedPassword)) ===
           true) {
         const token = jwt.sign({username}, authSecretKey, {expiresIn: '6h'});
@@ -153,8 +152,12 @@ app.post('/api/v1/logout', (req, res) => {
 app.post('/api/v1/measurement', basic, (req, res) => {
   const device_id = req.header('Device-Id');
   const timestamp = req.header('Timestamp');
-
   const {measurement_type, value} = req.body;
+
+  if(!device_id || !timestamp || !measurement_type || !value) {
+    return res.status(400).send("Invalid request");
+  }
+
   database.insertMeasurement(
       device_id, timestamp, measurement_type, value, (err, results) => {
         if (err) {
@@ -210,6 +213,9 @@ app.post('/api/v1/image', basic, upload.single('image'), async (req, res) => {
   if (!req.file) {
     return res.status(400).send('No files were uploaded.');
   }
+  if(!device_id || !timestamp || !image_mime) {
+    return res.status(400).send("Invalid request");
+  }
 
   let avifBuffer;
   const avif_mime = 'image/avif';
@@ -218,6 +224,9 @@ app.post('/api/v1/image', basic, upload.single('image'), async (req, res) => {
   } else {
     avifBuffer = await convertImage(req.file.buffer, image_mime);
   }
+
+  io.emit('imageUpdate', {buffer: Array.from(avifBuffer), timestamp});
+
   const imageHexString = avifBuffer.toString('hex');
 
   database.insertImage(
@@ -229,8 +238,6 @@ app.post('/api/v1/image', basic, upload.single('image'), async (req, res) => {
           res.send({message: 'Image inserted successfully'});
         }
       });
-
-  io.emit('imageUpdate', {buffer: Array.from(avifBuffer), timestamp});
 });
 
 socket(io, authenticateToken, database);
@@ -277,19 +284,23 @@ app.get('*', (req, res) => {
 
 // FIXME
 setInterval(() => {
+
   io.emit('measurementTemperature', [{
             timestamp: Date.now(),
             value: (Math.sin(Date.now() / 5000) * 0.5 + 0.5) * 60 - 10
           }]);
+
   io.emit(
       'measurementOD',
       [{timestamp: Date.now(), value: Math.sin(Date.now() / 500) * 0.5 + 0.5}]);
+
+
   io.emit('measurementCO2', [{
             timestamp: Date.now(),
             value: (Math.sin(Date.now() / 2000) * 0.5 + 0.5) * 1000
           }]);
-}, 1000);
-// database.insertTask(1, "Illumination Task", "illumination", "2024-08-01 08:00:00", "2024-08-01 20:00:00", "24:00:00", console.log);
-// database.insertTask(1, "Mixing Event", "mixing", "2024-08-05 015:00:00", "2024-08-05 15:30:00", null, console.log);
 
+}, 1000);
+
+server.keepAliveTimeout = 30 * 1000; // seconds
 server.listen(PORT, () => console.log(`server listening on port: ${PORT}`));
