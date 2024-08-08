@@ -283,9 +283,9 @@ app.get('/api/v1/export', async (req, res) => {
   res.send(excelBuffer);
 });
 
-// app.get('*', (req, res) => {
-//   return res.status(401).redirect('/?failed=unauthorized');
-// })
+app.get('*', (req, res) => {
+  return res.status(401).redirect('/?failed=unauthorized');
+})
 
 // FIXME
 setInterval(() => {
