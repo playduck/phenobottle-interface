@@ -2,12 +2,8 @@ const fs = require('fs');
 const path = require('path');
 const mysql = require('mysql');
 
-const db = mysql.createConnection({
-  host: 'db.robin-prillwitz.de',
-  user: 'k122486_pheno_admin',
-  password: '!31PaperBack',
-  database: 'k122486_phenobottle'
-});
+const dbaccess = require("./dbaccess.json");
+const db = mysql.createConnection(dbaccess);
 
 function connect() {
   console.log('connecting to db');
