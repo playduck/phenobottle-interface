@@ -1,6 +1,6 @@
 /* jshint esversion:6 */
 
-const PORT = 8080;
+const PORT = process.env.PORT || 8080;
 
 const users = require('./users.json');
 
