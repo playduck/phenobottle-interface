@@ -9,6 +9,7 @@ const cors = require('cors')
 const basicAuth = require('express-basic-auth');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
+const path = require('path');
 
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
@@ -107,12 +108,16 @@ const basic = (basicAuth({
   challenge: true,
 }));
 
-app.use('/favicon.ico', express.static('./www/public/assets/favicon.ico'));
+const faviconPath = path.join(__dirname, '../www', 'public/assets/favicon.ico');
+app.use('/favicon.ico', express.static(faviconPath));
 
 app.use(authenticate);
 
+const publicPath = path.join(__dirname, '../www', 'public');
+const privatePath = path.join(__dirname, '../www', 'private');
+
 app.use('/', (req, res, next) => {
-  const rootDir = req.user ? './www/private' : './www/public';
+  const rootDir = req.user ? privatePath : publicPath;
   express.static(rootDir)(req, res, next);
 });
 
@@ -278,9 +283,9 @@ app.get('/api/v1/export', async (req, res) => {
   res.send(excelBuffer);
 });
 
-app.get('*', (req, res) => {
-  return res.status(401).redirect('/?failed=unauthorized');
-})
+// app.get('*', (req, res) => {
+//   return res.status(401).redirect('/?failed=unauthorized');
+// })
 
 // FIXME
 setInterval(() => {

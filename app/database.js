@@ -25,7 +25,7 @@ function runCommand(sqlCommand, callback) {
 }
 
 function readCommand(filename) {
-  const filePath = path.join(__dirname, 'sql', filename) + '.sql';
+  const filePath = path.join(__dirname, '../sql', filename) + '.sql';
   const text = fs.readFileSync(filePath, {encoding: 'utf-8'}).toString();
   const commands = text.split(/;/g);
   return commands;

@@ -2,11 +2,11 @@
 <p align="center">
     <img style="height: 8em" src="./www/private/assets/dinolabsBlue.svg"/>
     <h1 style="margin: 1em">WARR D.I.N.O.labs phenobottle interface</h1>
-    <a href="https://warr.robin-prillwitz.de">>>> live version <<<</a>
+    <a href="https://warr.robin-prillwitz.de">live version</a>
 </p>
 
-The server and web interface for the WARR spacelabs phenobottle.
-This exposes a password-protected user interface, a REST-ful HTTP API and an SQL database connection.
+The server and web interface for the [WARR](http://warr.de) spacelabs phenobottle.
+This exposes a password-protected user interface, a RESTful HTTP API, and an SQL database connection.
 The MySQL database must be hosted externally.
 
 ## Installation
@@ -25,7 +25,6 @@ npm start
 # or run with automatic relaod using
 nodemon app.js
 ```
-
 
 ### Hosting
 
