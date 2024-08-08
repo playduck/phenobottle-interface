@@ -1,6 +1,6 @@
 
 <p align="center">
-    <img style="height: 8em" src="./www/private/assets/dinolabsBlue.svg"/>
+    <img style="height: 8em" src="./app/www/private/assets/dinolabsBlue.svg"/>
     <h1 style="margin: 1em">WARR D.I.N.O.labs phenobottle interface</h1>
     <a href="https://warr.robin-prillwitz.de">live version</a>
 </p>
