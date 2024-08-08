@@ -111,14 +111,23 @@ const timelineOptions = {
   rollingMode: {follow: false, offset: 0.85},
   snap: snap,
   onMoving: (item, callback) => {
+    const duration = dateDiffToString(item.start, item.end);
+
+    if(!item.period) {
+      tasks[canonicalTaskIndex].task_start = item.start.toISOString();
+      tasks[canonicalTaskIndex].task_duration = duration;
+
+      callback(item);
+      return;
+    }
+
+    const durations = duration.split(":");
 
     const start = `${item.start.getHours()}:${item.start.getMinutes()}:${item.start.getSeconds()}`
-    const duration = dateDiffToString(item.start, item.end);
     tasks[canonicalTaskIndex].task_start = updateTime(tasks[canonicalTaskIndex].task_start, start);
     tasks[canonicalTaskIndex].task_duration = duration;
 
     startSettingElement.value = `${zeroPad(item.start.getHours(), 2)}:${zeroPad(item.start.getMinutes(),2)}`;
-    const durations = duration.split(":");
     durationSettingElement.value = `${zeroPad(durations[0], 2)}:${zeroPad(durations[1], 2)}`;
 
     drawTasks(canonicalTaskIndex);
@@ -128,8 +137,9 @@ const timelineOptions = {
 };
 
 function snap(date, scale, step) {
-  const minute = 60 * 1000; // 1 minute in milliseconds
-  const hour = 60 * minute; // 1 hour in milliseconds
+  const minute = 60 * 1000;
+  const hour = 60 * minute;
+  const halfhour = 30 * minute;
 
   let snapUnit;
   switch (scale) {
@@ -137,13 +147,13 @@ function snap(date, scale, step) {
       snapUnit = minute;
       break;
     case 'hour':
-      snapUnit = hour;
+      snapUnit = halfhour;
       break;
     case 'weekday':
-      snapUnit = hour;
+      snapUnit = halfhour;
       break;
     case 'day':
-      snapUnit = hour * 3;
+      snapUnit = hour;
       break;
     case 'month':
       snapUnit = hour * 8;
@@ -263,7 +273,7 @@ periodSettingElement.addEventListener("change", () => {
 });
 
 saveTimelineBtn.addEventListener("click", () => {
-  console.log(tasks);
+  console.log(structuredClone(tasks));
 });
 
 function updateTime(originalTime, newHMS) {

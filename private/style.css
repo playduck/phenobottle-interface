@@ -195,7 +195,6 @@ footer {
 
 #sign {
     cursor: help;
-    aspect-ratio: 3/1;
     height: 4ex;
     transition: fill 200ms;
     fill: var(--light-gray);
@@ -401,7 +400,9 @@ footer {
     fill-opacity: 0.25!important;
     stroke: unset!important
 }
-
+.vis-item {
+    border-radius: var(--border-radius);
+}
 #temperature-plot .vis-graph-group0, #temperature-plot .vis-graph-group0.vis-point {
     fill: var(--light-gray)!important;
     stroke: color-mix(in srgb, var(--warr-blue-3), var(--light-gray) 80%)!important;
@@ -438,7 +439,6 @@ footer {
     background-color: color-mix(in srgb, var(--warr-blue-3), var(--very-light-gray) 20%)!important;
     border-color: color-mix(in srgb, var(--warr-blue-3), var(--very-light-gray) 60%)!important;
 }
-
 .vis-item.expected {
     background-color: transparent;
     border-style: dashed!important;
@@ -446,6 +446,7 @@ footer {
 }
 .vis-item.vis-selected {
     opacity: 0.6;
+    border-color: var(--warr-blue-1)!important;
 }
 .vis-current-time, .vis-item.vis-background.marker {
     background-color: var(--warr-red)!important;
