@@ -1,9 +1,9 @@
 
-<div style="display:flex; flex-direction: column; align-items: center; margin:1em">
+<p align="center">
     <img style="height: 8em" src="./www/private/assets/dinolabsBlue.svg"/>
     <h1 style="margin: 1em">WARR D.I.N.O.labs phenobottle interface</h1>
     <a href="https://warr.robin-prillwitz.de">>>> live version <<<</a>
-</div>
+</p>
 
 The server and web interface for the WARR spacelabs phenobottle.
 This exposes a password-protected user interface, a REST-ful HTTP API and an SQL database connection.
@@ -110,6 +110,6 @@ Find a copy of the license at [COPYING](./COPYING).
 
 ---
 
-<div style="display:flex; flex-direction: column; align-items: center; margin:2em">
+<p align="center">
     <a href="https://robin-prillwitz.de">Robin Prillwitz MMXXIV</a>
-</div>
+</p>
