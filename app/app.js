@@ -108,13 +108,13 @@ const basic = (basicAuth({
   challenge: true,
 }));
 
-const faviconPath = path.join(__dirname, '../www', 'public/assets/favicon.ico');
+const faviconPath = path.join(__dirname, '/www', 'public/assets/favicon.ico');
 app.use('/favicon.ico', express.static(faviconPath));
 
 app.use(authenticate);
 
-const publicPath = path.join(__dirname, '../www', 'public');
-const privatePath = path.join(__dirname, '../www', 'private');
+const publicPath = path.join(__dirname, '/www', 'public');
+const privatePath = path.join(__dirname, '/www', 'private');
 
 app.use('/', (req, res, next) => {
   const rootDir = req.user ? privatePath : publicPath;
