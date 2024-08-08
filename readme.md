@@ -40,6 +40,9 @@ Required settings for this provider:
 The repository does not include the user credentials and database access information.
 These must be provided separately in distinct files.
 
+> [!NOTE]
+> The secret files must be manually added to the `./app` directory!
+
 #### Users
 
 User passwords are stored in `users.json`:
