@@ -121,6 +121,8 @@ const basic = (basicAuth({
 // global access to favicon
 const faviconPath = path.join(__dirname, '/www', 'public/assets/favicon.ico');
 app.use('/favicon.ico', express.static(faviconPath));
+const robotsPath = path.join(__dirname, '/www', 'public/robots.txt');
+app.use('/robots.txt', express.static(robotsPath));
 
 app.use(authenticate);
 
