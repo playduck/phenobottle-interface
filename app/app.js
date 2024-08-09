@@ -18,7 +18,11 @@ const bcrypt = require('bcrypt');
 const saltRounds = 10;
 
 const crypto = require('crypto');
-const authSecretKey = crypto.randomBytes(512).toString('base64');
+let { publicKey, privateKey } = crypto.generateKeyPairSync("rsa", {
+  modulusLength: 4096,
+  publicKeyEncoding: { type: "spki", format: "pem" },
+  privateKeyEncoding: { type: "pkcs8", format: "pem" },
+});
 
 const multer = require('multer');
 const storage = multer.memoryStorage();
@@ -34,6 +38,15 @@ const exporter = require('./exporter.js');
 const socket = require('./socket.js');
 
 const exitHandler = (options, exitCode) => {
+  // zeorize all critical memory
+  publicKey = "";
+  privateKey = "";
+  for (const user in users) {
+    users[user].hashedPassword = "";
+    users[user].plainPassword = "";
+    basicAuthUsers[users[user].username] = "";
+  }
+
   database.disconnect();
 
   if (options.cleanup) {
@@ -60,8 +73,12 @@ const getUnauthorizedResponse = (req) => {
 };
 
 const corsOptions = {
-  optionsSuccessStatus:
-      200  // some legacy browsers (IE11, various SmartTVs) choke on 204
+  optionsSuccessStatus: 200
+};
+
+const tokenOptions = {
+  algorithm: "RS512",
+  expiresIn: "6h",
 };
 
 database.connect();
@@ -71,9 +88,11 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser('secret'));
 
+
+
 // jwt auth function
 const authenticateToken = (token, callback) => {
-  jwt.verify(token, authSecretKey, callback);
+  jwt.verify(token, publicKey, tokenOptions, callback);
 };
 
 const authenticate = (req, res, next) => {
@@ -147,7 +166,7 @@ app.post('/api/v1/login', async (req, res) => {
           true) {
 
         // generate jwt
-        const token = jwt.sign({username}, authSecretKey, {expiresIn: '6h'});
+        const token = jwt.sign({"username": username, "level": users[user].level}, privateKey, tokenOptions);
 
         // set jwt cookie, only set as secure in prod
         res.cookie('x-auth-token', token, {
