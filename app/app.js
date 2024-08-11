@@ -15,7 +15,8 @@ const database = require('./database.js');
 const socket = require('./socket.js');
 
 const frontend_router = require('./routes/frontend.js');
-const {authenticate, authenticateToken, auth_router, basic} = require('./auth/auth.js');
+const {authenticate, authenticateToken, auth_router, basic} =
+    require('./auth/auth.js');
 const api_v1_router = require('./routes/api_v1.js');
 
 const exitHandler = (options, exitCode) => {
@@ -41,19 +42,12 @@ const corsOptions = {
   optionsSuccessStatus: 200
 };
 
-database.connect();
-
-// install global middleware
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser('secret'));
-
 app.use(authenticate);
-
 app.use(frontend_router);
-
 app.use(auth_router);
-
 app.use(api_v1_router(basic, io));
 
 // catch-all handler
@@ -81,6 +75,8 @@ setInterval(() => {
             value: (Math.sin(Date.now() / 2000) * 0.5 + 0.5) * 1000
           }]);
 }, 1000);
+
+database.connect();
 
 server.keepAliveTimeout = 30 * 1000;  // seconds
 server.listen(PORT, () => console.log(`server listening on port: ${PORT}`));

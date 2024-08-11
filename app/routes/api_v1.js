@@ -6,7 +6,7 @@ const storage = multer.memoryStorage();
 const upload = multer({storage: storage});
 
 const database = require('../database.js');
-const { convertImage } = require('../util/image.js');
+const {convertImage} = require('../util/image.js');
 const exporter = require('../util/exporter.js');
 
 module.exports = (basic, io) => {

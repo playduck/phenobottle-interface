@@ -27,7 +27,6 @@ const getUnauthorizedResponse = (req) => {
       'No credentials provided'
 };
 
-
 // jwt auth function
 const authenticateToken = (token, callback) => {
   jwt.verify(token, publicKey, tokenOptions, callback);
@@ -120,5 +119,8 @@ auth_router.post('/auth/logout', (req, res) => {
 });
 
 module.exports = {
-   authenticate, authenticateToken, auth_router, basic
+  authenticate,
+  authenticateToken,
+  auth_router,
+  basic
 }
