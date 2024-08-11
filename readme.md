@@ -77,7 +77,7 @@ Access to the mySQL database is described in `dbaccess.json`. It's contents are 
 The user interface is protected with `jwt` sent as http-only cookies in a secure context.
 Real-time communication is established by `socket.io` connections.
 All communication must be handled over a secure and encrypted channel (e.g. TLS over HTTPS).
-The `jwt` secret key is a UUIDv4, which is re-generated during server start.
+The `jwt` uses 4096-bit RSA-512, with keys generated at the server start.
 
 The user should only ever need to access the website's `/` route.
 They will be redirected to the appropriate login or interface.

@@ -732,7 +732,7 @@ socket.on('disconnect', (reason) => {
 });
 
 document.getElementById("logout").addEventListener("click", (e) => {
-  fetch('/api/v1/logout', {
+  fetch('/auth/logout', {
     method: 'POST'
   })
   .then((res) => res.json())
