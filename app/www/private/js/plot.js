@@ -760,7 +760,10 @@ document.getElementById("logout").addEventListener("click", (e) => {
   .then((data) => {
     location.href = data.message;
   })
-  .catch(console.err);
+  .catch((err) => {
+    console.error(err)
+    location.href = "/";
+  });
 });
 
 function hideSnackbar(callback) {
