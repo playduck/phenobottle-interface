@@ -13,6 +13,7 @@ const io = require('socket.io')(server);
 
 const database = require('./database.js');
 const socket = require('./socket.js');
+const loggerMiddleware = require('./util/logger.js');
 
 const frontend_router = require('./routes/frontend.js');
 const {authenticate, authenticateToken, auth_router, basic} =
@@ -44,6 +45,7 @@ const corsOptions = {
 
 actionQueue = [];
 
+app.use(loggerMiddleware);
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser('secret'));
