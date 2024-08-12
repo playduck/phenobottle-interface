@@ -21,10 +21,7 @@ const tokenOptions = {
 };
 
 const getUnauthorizedResponse = (req) => {
-  console.log(req)
-  return req.auth ?
-      ('Credentials ' + req.auth.user + ':' + req.auth.password + ' rejected') :
-      'No credentials provided'
+  return req.auth ? 'Credentials rejected' : 'No credentials provided'
 };
 
 // jwt auth function

@@ -71,6 +71,11 @@ function getDeviceTasks(device_id, callback) {
   db.query(taskQuery, [device_id], callback);
 }
 
+function getDeviceSettings(device_id, callback) {
+  const taskQuery = 'SELECT * FROM Settings WHERE device_id = ?';
+  db.query(taskQuery, [device_id], callback);
+}
+
 function getLatestImage(device_id, callback) {
   // TODO implement caching?
   const imageQuery =
@@ -136,6 +141,7 @@ module.exports = {
   insertTask,
   getDevices,
   getDeviceTasks,
+  getDeviceSettings,
   getLatestImage,
   getLatestMeasurements,
   getAllData

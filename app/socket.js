@@ -2,7 +2,7 @@
 
 const cookie = require('cookie');
 
-module.exports = (io, authenticateToken, database) => {
+module.exports = (io, authenticateToken, database, actionQueue) => {
   let heartbeatInterval;
   console.log("listening for new ws connections")
 
@@ -94,6 +94,14 @@ module.exports = (io, authenticateToken, database) => {
 
         socket.emit("tasks", rows);
       });
+    });
+
+    socket.on("action", (device_id, action) => {
+      if(actionQueue[device_id] === undefined)  {
+        actionQueue[device_id] = [action];
+      } else  {
+        actionQueue[device_id].push(action);
+      }
     });
 
     let heartbeatTimeout = 0;

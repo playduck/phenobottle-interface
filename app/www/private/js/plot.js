@@ -19,6 +19,11 @@ const cameraContainer = document.getElementById('camera-container');
 
 let materModeEnabled = false;
 const materModeButton = document.getElementById('mater-mode-button');
+const actionForceRestart = document.getElementById("action-force-restart");
+const actionMeasureTemp = document.getElementById("action-measure-temp");
+const actionMeasureOd = document.getElementById("action-measure-od");
+const actionMeasureGas = document.getElementById("action-measure-gas");
+const actionTriggerCamera = document.getElementById("action-trigger-camera");
 
 const connectionElement = document.getElementById('connection');
 const hostTimeElement = document.getElementById('time');
@@ -583,6 +588,22 @@ function playSound(duration_ms) {
     }
   }, duration_ms);
 }
+
+actionForceRestart.onclick = () => {
+  socket.emit("action", device_id, "restart");
+};
+actionMeasureTemp.onclick = () => {
+  socket.emit("action", device_id, "temp");
+};
+actionMeasureOd.onclick = () => {
+  socket.emit("action", device_id, "od");
+};
+actionMeasureGas.onclick = () => {
+  socket.emit("action", device_id, "gas");
+};
+actionTriggerCamera.onclick = () => {
+  socket.emit("action", device_id, "camera");
+};
 
 materModeButton.onclick =
     () => {

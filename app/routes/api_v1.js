@@ -9,7 +9,7 @@ const database = require('../database.js');
 const {convertImage} = require('../util/image.js');
 const exporter = require('../util/exporter.js');
 
-module.exports = (basic, io) => {
+module.exports = (basic, io, actionQueue) => {
   const router = express.Router();
 
   // POST endpoint for temperature, CO2, and OD measurements
@@ -78,6 +78,34 @@ module.exports = (basic, io) => {
               }
             });
       });
+
+  router.get('/api/v1/state/:id', basic, (req, res) => {
+    const deviceId = req.params.id;
+
+    const response = {
+      "state": "failure",
+      "tasks": [],
+      "settings": [],
+      "actions": []
+    };
+
+    database.getDeviceTasks(deviceId, (terr, taskRows) => {
+      if(terr) return res.send(response);
+      database.getDeviceSettings(deviceId, (serr, settingsRows) => {
+        if(serr) return res.send(response);
+
+        const actions = actionQueue[deviceId] || [];
+        actionQueue[deviceId] = [];
+
+        response.state = "success";
+        response.tasks = taskRows;
+        response.settings = settingsRows;
+        response.actions = actions;
+
+        res.send(response);
+      });
+    });
+  });
 
   // image get endpoint, latest image per device_id
   router.get('/api/v1/image/:id', (req, res) => {

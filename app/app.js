@@ -42,13 +42,15 @@ const corsOptions = {
   optionsSuccessStatus: 200
 };
 
+actionQueue = [];
+
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser('secret'));
 app.use(authenticate);
 app.use(frontend_router);
 app.use(auth_router);
-app.use(api_v1_router(basic, io));
+app.use(api_v1_router(basic, io, actionQueue));
 
 // catch-all handler
 app.get('*', (req, res) => {
@@ -56,7 +58,7 @@ app.get('*', (req, res) => {
 })
 
 // start ws server
-socket(io, authenticateToken, database);
+socket(io, authenticateToken, database, actionQueue);
 
 // FIXME test sending data
 setInterval(() => {

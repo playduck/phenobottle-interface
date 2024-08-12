@@ -38,6 +38,17 @@ CREATE TABLE IF NOT EXISTS Tasks (
     CONSTRAINT fk_device_id_task FOREIGN KEY (device_id) REFERENCES Devices (device_id)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
+CREATE TABLE IF NOT EXISTS Settings (
+    settings_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    device_id SMALLINT UNSIGNED NOT NULL,
+    temp_update_rate FLOAT,
+    od_update_rate FLOAT,
+    gas_update_rate FLOAT,
+    camera_update_rate FLOAT,
+    INDEX idx_device_id (device_id),
+    CONSTRAINT fk_device_id_settings FOREIGN KEY (device_id) REFERENCES Devices (device_id)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8;
+
 CREATE EVENT IF NOT EXISTS PurgeOldImages ON SCHEDULE every 1 hour ON COMPLETION PRESERVE DO
 DELETE FROM
     Images
