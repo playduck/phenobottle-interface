@@ -31,7 +31,6 @@ const logMiddleware = (req, res, next) => {
       duration,
       data: chunk,
       userAgent: req.headers['user-agent'],
-      ip: req.ip,
     };
 
     logger.info(response);
@@ -47,7 +46,6 @@ const logMiddleware = (req, res, next) => {
       duration,
       data,
       userAgent: req.headers['user-agent'],
-      ip: req.ip,
     };
 
     logger.info(response);
