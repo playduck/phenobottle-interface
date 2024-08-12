@@ -96,6 +96,7 @@ Other endpoints for the phenobottle devices are handled by basic-auth.
 | `/api/v1/image/:1` | jwt | GET | gets the latets image of the device at id `:1` |
 | `/api/v1/measurement` | basic | POST | measurements as json array |
 | `/api/v1/image` | basic | POST | camera image as a multipart form |
+| `/api/v1/state/:1` | basic | GET | read entire device state with pending actions |
 
 ## Database
 
