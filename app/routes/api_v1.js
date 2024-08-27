@@ -8,6 +8,13 @@ const upload = multer({storage: storage});
 const database = require('../database.js');
 const {convertImage} = require('../util/image.js');
 const exporter = require('../util/exporter.js');
+const { time } = require('console');
+const exp = require('constants');
+
+// TODO refactor this to a utils class, copy exists in socket.js
+function capitalizeFirstLetter(string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}
 
 module.exports = (basic, io, actionQueue) => {
   const router = express.Router();
@@ -18,14 +25,16 @@ module.exports = (basic, io, actionQueue) => {
     const timestamp = req.header('Timestamp');
     const {measurement_type, value} = req.body;
 
-    if (!device_id || !timestamp || !measurement_type || !value) {
+    if (device_id == undefined || timestamp == undefined || measurement_type == undefined || value == undefined) {
       return res.status(400).send('Invalid request');
     }
 
     // send to all ws clients
-    socket.emit(
-        `measurement${capitalizeFirstLetter(measurement_type)}`,
-        [{timestamp: timestamp, value: value}]);
+    if(io)  {
+      io.emit(
+          `measurement${capitalizeFirstLetter(measurement_type)}`,
+          [{timestamp: timestamp, value: value}]);
+    }
 
     // write to db
     database.insertMeasurement(
@@ -34,7 +43,7 @@ module.exports = (basic, io, actionQueue) => {
             console.error(err);
             res.status(500).send({message: 'Error inserting measurement'});
           } else {
-            res.send({message: 'Measurement inserted successfully'});
+            res.send({status: "success", message: 'Measurement inserted successfully'});
           }
         });
   });
@@ -62,8 +71,10 @@ module.exports = (basic, io, actionQueue) => {
           avifBuffer = await convertImage(req.file.buffer, image_mime);
         }
 
-        // send buffer directly to ws clients
-        io.emit('imageUpdate', {buffer: Array.from(avifBuffer), timestamp});
+        if(io)  {
+          // send buffer directly to ws clients
+          io.emit('imageUpdate', {buffer: Array.from(avifBuffer), timestamp});
+        }
 
         // save to db as hex blob
         const imageHexString = avifBuffer.toString(
@@ -74,7 +85,7 @@ module.exports = (basic, io, actionQueue) => {
                 console.error(err);
                 res.status(500).send({message: 'Error inserting image'});
               } else {
-                res.send({message: 'Image inserted successfully'});
+                res.send({status: "success", message: 'Image inserted successfully'});
               }
             });
       });
