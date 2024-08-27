@@ -63,6 +63,7 @@ app.get('*', (req, res) => {
 socket(io, authenticateToken, database, actionQueue);
 
 // FIXME test sending data
+/*
 setInterval(() => {
   io.emit('measurementTemperature', [{
             timestamp: Date.now(),
@@ -79,6 +80,7 @@ setInterval(() => {
             value: (Math.sin(Date.now() / 2000) * 0.5 + 0.5) * 1000
           }]);
 }, 1000);
+*/
 
 database.connect();
 
