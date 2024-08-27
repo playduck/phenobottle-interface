@@ -62,6 +62,13 @@ module.exports = (basic, io, actionQueue) => {
           return res.status(400).send('Invalid request');
         }
 
+        if(io)  {
+          // send buffer directly to ws clients
+          io.emit('imageUpdate', {buffer: Array.from(req.file.buffer), timestamp});
+        }
+
+        res.send({status: "success", message: 'Image received successfully'});
+
         // convert to avif if given mime type is different
         let avifBuffer;
         const avif_mime = 'image/avif';
@@ -69,11 +76,6 @@ module.exports = (basic, io, actionQueue) => {
           avifBuffer = req.file.buffer;
         } else {
           avifBuffer = await convertImage(req.file.buffer, image_mime);
-        }
-
-        if(io)  {
-          // send buffer directly to ws clients
-          io.emit('imageUpdate', {buffer: Array.from(avifBuffer), timestamp});
         }
 
         // save to db as hex blob
