@@ -85,9 +85,6 @@ module.exports = (basic, io, actionQueue) => {
             device_id, timestamp, avif_mime, imageHexString, (err, results) => {
               if (err) {
                 console.error(err);
-                res.status(500).send({message: 'Error inserting image'});
-              } else {
-                res.send({status: "success", message: 'Image inserted successfully'});
               }
             });
       });
